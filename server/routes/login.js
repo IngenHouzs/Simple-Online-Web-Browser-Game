@@ -23,8 +23,7 @@ router.put('/', cors(), async (request, response) => {
             if (user.username === username){          
                 const matchPassword = await bcrypt.compare(password, user.password);
                 if (matchPassword){
-                    const playerIsOnline = onlineUsers.find((player) => user.username === player.user.username);                    
-                    console.log(playerIsOnline, "wkkwkwkw");                          
+                    const playerIsOnline = onlineUsers.find((player) => user.username === player.user.username);                                       
                     if (playerIsOnline){
                         response.status(404).send({
                             status : 'fail',
@@ -40,7 +39,8 @@ router.put('/', cors(), async (request, response) => {
                         user, 
                         {
                             $set : {
-                                isOnline : true
+                                isOnline : true,
+                                currentRoom : null
                             }
                         }
                     )

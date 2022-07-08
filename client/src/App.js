@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router";
 import Form from "./pages/Form";
 import Application from './pages/Application';
+import GameRoom from "./pages/GameRoom";
 import {socketIOClient, socket, ENDPOINT} from "./ClientSocket";
 
 import "./index.css";
@@ -10,7 +12,6 @@ import "./index.css";
 function App() {
 
   const loginCard = useRef(null);
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(()=>{
@@ -29,6 +30,7 @@ function App() {
         <Route path="/login" element={<Form targetAPI="http://localhost:8080/login" type="Log In" setIsLoggedIn={setIsLoggedIn}/>}/>
         <Route path="/signup" element={<Form targetAPI="http://localhost:8080/signup" type="Sign Up" setIsLoggedIn={setIsLoggedIn}/>}/> 
         <Route path="/app" element={<Application targetAPI="http://localhost:8080/app" loginCard={loginCard}/>}/>        
+        <Route path="/app/room" element={<GameRoom/>}/>
       </Routes>    
 
     {!isLoggedIn ? 

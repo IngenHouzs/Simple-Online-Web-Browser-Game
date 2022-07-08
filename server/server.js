@@ -5,7 +5,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 
-const {database, databaseName, collectionName, usersList} = require('./database');
+const {database, databaseName, collectionName, roomCollection,usersList} = require('./database');
 const appAPI = require('./routes/app');
 const loginAPI = require('./routes/login');
 const signupAPI = require('./routes/signup');
@@ -43,6 +43,48 @@ io.on('connection', socket => {
         } catch (err){console.log("connected : error occured")}
     });     
 
+    socket.on('announce-new-room', async () => {
+        try{
+            const databasePromise = database();
+            const databaseInstance = await databasePromise;
+            const findDatabaseName = await databaseInstance.db(databaseName);        
+            const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
+            io.emit('update-rooms-list-client', getUpdatedRooms);
+        }catch(err){console.error(err)}
+    });
+
+    socket.on('joined-room', async (user, room) => {
+        try {
+            const databasePromise = database();
+            const databaseInstance = await databasePromise;
+            const findDatabaseName = await databaseInstance.db(databaseName);     
+            const findUser = await findDatabaseName.collection(collectionName).updateOne(
+                {username : user.username}, 
+                {
+                    $set : {
+                        currentRoom : room.roomName
+                    }
+                }
+            )
+        } catch (err) {console.error(err)}
+    });
+
+    socket.on('leaves-room', async (user) => {
+        try {
+            const databasePromise = database();
+            const databaseInstance = await databasePromise;
+            const findDatabaseName = await databaseInstance.db(databaseName);              
+            const findUser = await findDatabaseName.collection(collectionName).updateOne(
+                {username : user.username}, 
+                {
+                    $set : {
+                        currentRoom : null
+                    }
+                }
+            )            
+        } catch (err) {console.error(err)}
+    });
+
     socket.on('disconnect', async () => {
         try{           
             const index = onlineUsers.findIndex((user) => user.id === socket.id);
@@ -54,12 +96,12 @@ io.on('connection', socket => {
                 username : onlineUsers[index].user.username,
                 password : onlineUsers[index].user.password
             }).toArray();
-            console.log(user);
             const updateOnlineStatus = await findDatabaseName.collection(collectionName).updateOne(
                 user[0],
                 {
                     $set : {
-                        isOnline : false
+                        isOnline : false,
+                        currentRoom : null
                     }
                 }
             );
@@ -75,6 +117,7 @@ io.on('connection', socket => {
 });
 
 // const io = socketIO(PORT)
+
 
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(express.json());

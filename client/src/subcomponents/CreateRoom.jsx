@@ -1,10 +1,22 @@
 import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef} from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import queryString from 'query-string';
 import { webserver } from "../ServerConfig";
 import FriendsLogo from "../assets/create-room/friends.png";
 import Padlock from "../assets/create-room/padlock.png";
+import { socket } from "../ClientSocket";
 
 export default function CreateRoom(props){
+
+    const {search} = useLocation();
+    const {roomId} = queryString.parse(search);
+
+    const userInformation = props.userInfo;    
+
+    const navigate = useNavigate();
+
     const [roomName, setRoomName] = useState('');
     const [roomPlayerCount, setRoomPlayerCount] = useState(1);
     const [roomPW, setRoomPW] = useState('');
@@ -48,7 +60,8 @@ export default function CreateRoom(props){
                 players : 1,
                 host : props.userInfo.username,
                 maxPlayer : Number(roomPlayerCount),
-                password : (enableRoomPassword ? roomPW : null)
+                password : (enableRoomPassword ? roomPW : null),
+                playerList : [props.userInfo]
             })
         }
         const targetAPI = webserver + '/app';
@@ -56,7 +69,11 @@ export default function CreateRoom(props){
             .then((res) => res.json())
             .then((res) => {
                 props.addNewRoomToClient(res.data);
-                console.log(res.data, "wkkw");
+                socket.emit('announce-new-room');
+                socket.emit('joined-room', props.userInfo, res.data);
+                props.updateOpenCreateRoom();
+                const room = res.data;
+                navigate(`/app/room?Id=${res.data.roomID}`,{state : {room, userInformation}});
             })
             .catch((err) => console.error(err)); 
     }

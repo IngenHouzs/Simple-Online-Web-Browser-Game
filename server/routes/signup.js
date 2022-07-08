@@ -39,6 +39,7 @@ router.post('/', async (request, response) => {
                 password : hashedPassword,
                 point : 0,
                 rank : 1,
+                currentRoom : null,
                 isOnline : true
             }, (err, res) => {
             if (err) {
