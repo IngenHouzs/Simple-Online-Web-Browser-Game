@@ -3,17 +3,48 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router";
 import {socketIOClient, socket, ENDPOINT} from "../ClientSocket";
 import { webserver } from "../ServerConfig";
+
+import GameChat from "../components/GameChat";
+import GamePage from "../components/GamePage";
+import Game from "../components/Game";
 import "../index.css";
 
 
 export default function GameRoom(props){
     const location = useLocation();
-    const roomInfo = location.state.room;
-    const userInfo = location.state.userInformation;
+    const RoomInfo = location.state.room;
+    const UserInfo = location.state.userInformation;
+
+    const [roomInfo, setRoomInfo] = useState(RoomInfo);
+    const [userInfo, setUserInfo] = useState(UserInfo);
+    const [startGame, setStartGame] = useState(false);
+    const [closeChat, setCloseChat] = useState(false);
+
+    const setStartGameHandler = async () => {
+        if (roomInfo.host !== userInfo.username || roomInfo.playerList.length <= 1) return;
+        socket.emit('host-start-game', roomInfo, allClientStartGame);
+        socket.emit('announce-new-room');
+        setStartGame(true);
+    }
+
+    const allClientStartGame = () => setStartGame(true);
+
+    const setCloseChatHandler = () => setCloseChat(!closeChat);
+
+    socket.on('update-player-room', (players, room) => {
+        setRoomInfo(room);
+        console.log(room, "ume");
+    });    
+
+
+    socket.on('player-enter-game', callback => {
+        setStartGame(true);
+    });
+    
+    // socket.emit('joined-room', userInfo, roomInfo);
+    // socket.emit('announce-new-room');     
 
     const playerLeavesRoomListener = async () => {
-        // hapus user dari room
-        // kalo length player 0 (hapus room)
         const requestDetails = {
             mode : 'cors',
             method : 'DELETE',
@@ -23,8 +54,6 @@ export default function GameRoom(props){
             body : JSON.stringify(userInfo)
         }
 
-        console.log('leave');
-        console.log(userInfo, roomInfo);
         const targetAPI = webserver + `/app/room?Id=${roomInfo.roomID}`;
         fetch(targetAPI, requestDetails)
             .then((res) => {
@@ -32,10 +61,9 @@ export default function GameRoom(props){
                 return res;
             })
             .then((res) => {
-                console.log(res, "ejehehehh");
+
                 socket.emit('announce-new-room');
                 socket.emit('leaves-room', userInfo, roomInfo);
-                console.log('aaaaaaaaaa')                ;
             })
             .catch((err) => {
                 console.error(err);
@@ -43,12 +71,17 @@ export default function GameRoom(props){
             });
     }
 
-    useEffect(() => {
-        window.addEventListener('pagehide', () => console.log("wkwkkwkw"));
 
+    useEffect(() => {
+        socket.emit('joined-room', userInfo, roomInfo);
+        socket.emit('announce-new-room');       
         return () => playerLeavesRoomListener();
     },[]);
 
     return <div id="game-room">
+        {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler}/> : null}
+        {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
+        {startGame ? <Game closeChat={closeChat} setCloseChatHandler={setCloseChatHandler} roomInfo={roomInfo} userInfo={userInfo}/> : null}
+        {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}
     </div>
 }

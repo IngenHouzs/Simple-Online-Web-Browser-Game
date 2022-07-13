@@ -53,8 +53,33 @@ io.on('connection', socket => {
         }catch(err){console.error(err)}
     });
 
+    socket.on('user-send-message-to-room', (message, room, sender) => {
+        socket.to(room).emit('receive-room-message', message, sender);
+        console.log(sender, message);
+    });
+
+    socket.on('host-start-game', async (roomInfo, callback) => {
+        try{
+            const databasePromise = database();
+            const databaseInstance = await databasePromise;
+            const findDatabaseName = await databaseInstance.db(databaseName); 
+            const changeInGameRoomStatus = await findDatabaseName.collection(roomCollection).updateOne(
+                {roomName : roomInfo.roomName},
+                {
+                    $set : {
+                        inGame : true
+                    }
+                }
+            ) 
+            const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
+            io.emit('update-rooms-list-client', getUpdatedRooms);
+        } catch (err) {console.error(err)}
+        io.to(roomInfo.roomName).emit('player-enter-game', callback);
+    });
+
     socket.on('joined-room', async (user, room) => {
         try {
+            socket.join(room.roomName);            
             const databasePromise = database();
             const databaseInstance = await databasePromise;
             const findDatabaseName = await databaseInstance.db(databaseName);     
@@ -66,11 +91,21 @@ io.on('connection', socket => {
                     }
                 }
             )
-        } catch (err) {console.error(err)}
+
+            const getRoom = await findDatabaseName.collection(roomCollection).find({
+                roomName : room.roomName
+            }).toArray();
+            // getRoom.forEach((room) => console.log(JSON.stringify(room, null, 4)))
+            
+            io.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);                
+            
+        } catch (err) {console.error(err, 'WKWKWK')}
     });
 
-    socket.on('leaves-room', async (user) => {
+
+    socket.on('leaves-room', async (user, room) => {
         try {
+            socket.leave(room.roomName);            
             const databasePromise = database();
             const databaseInstance = await databasePromise;
             const findDatabaseName = await databaseInstance.db(databaseName);              
@@ -81,9 +116,21 @@ io.on('connection', socket => {
                         currentRoom : null
                     }
                 }
-            )            
+            ) 
+
+            const getRoom = await findDatabaseName.collection(roomCollection).find({
+                roomName : room.roomName
+            }).toArray();
+            console.log(getRoom);
+            
+            socket.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);            
+            
+            
         } catch (err) {console.error(err)}
     });
+
+    
+
 
     socket.on('disconnect', async () => {
         try{           
@@ -96,6 +143,13 @@ io.on('connection', socket => {
                 username : onlineUsers[index].user.username,
                 password : onlineUsers[index].user.password
             }).toArray();
+
+
+            const findRoom = await findDatabaseName.collection(roomCollection).find(
+                {roomName : user[0].currentRoom}
+            ).toArray();
+            
+            
             const updateOnlineStatus = await findDatabaseName.collection(collectionName).updateOne(
                 user[0],
                 {
@@ -105,14 +159,70 @@ io.on('connection', socket => {
                     }
                 }
             );
-            onlineUsers.splice(index, 1);
-            io.emit('update-online-users', onlineUsers);        
-        } catch(err){console.log("Disconnect : error occured")};
-   
-    });
+
+            const playerIsHost = await findDatabaseName.collection(roomCollection).find({
+                host : user[0].username
+            }).toArray();
 
     
+            try {
+                if (findRoom.length > 0){
+                    const roomPlayerList = findRoom[0].playerList;
+                    const newRoomPlayerList = roomPlayerList.filter((player) => player.username !== user[0].username);
+                    
+                    if (newRoomPlayerList.length <= 0){
+                        const deleteRoom = await findDatabaseName.collection(roomCollection).deleteOne({
+                            roomID : findRoom[0].roomID
+                        }); 
+                    }
+                    else {
+                        const updatePlayerStatusOnRoom = await findDatabaseName.collection(roomCollection).updateOne(
+                            {roomName : user[0].currentRoom},
+                            {
+                                $set : {
+                                    playerList : [...newRoomPlayerList],
+                                    players : newRoomPlayerList.length
+                                }
+                            }
+                        );
+                        console.log(playerIsHost, "MAMAMAMAMA");
+                        if (playerIsHost.length > 0){
+                            const roomPlayersList = playerIsHost[0].playerList;
+                            const filterFromThisUser = roomPlayersList.filter((player) => player.username !== user[0].username); 
+                            const newHost = filterFromThisUser[Math.floor(Math.random() * filterFromThisUser.length)];      
 
+                            const updateHost = await findDatabaseName.collection(roomCollection).updateOne(
+                                {roomName : user[0].currentRoom},
+                                {
+                                    $set : {
+                                        host : newHost.username
+                                    }
+                                }
+                            )
+                        }                    
+                    } 
+    
+                    const newRoomList = await findDatabaseName.collection(roomCollection).find().toArray();
+                    console.log(newRoomList);
+                    for (let room of newRoomList){
+                        if (room.roomName === findRoom[0].roomName){
+                            console.log(room.playerList);
+                            socket.to(room.roomName).emit('update-player-room', room.playerList, room);
+                            break;
+                        }
+                    }
+                    console.log(newRoomList);
+                    io.emit('update-rooms-list-client', newRoomList);
+                }                
+
+            } catch (err) {console.error(err)}
+
+                
+            onlineUsers.splice(index, 1);
+            io.emit('update-online-users', onlineUsers);      
+        } catch(err){console.log(err)};
+   
+    });
 
 });
 

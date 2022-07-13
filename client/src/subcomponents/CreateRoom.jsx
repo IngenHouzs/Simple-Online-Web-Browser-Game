@@ -70,9 +70,9 @@ export default function CreateRoom(props){
             .then((res) => {
                 props.addNewRoomToClient(res.data);
                 socket.emit('announce-new-room');
-                socket.emit('joined-room', props.userInfo, res.data);
                 props.updateOpenCreateRoom();
                 const room = res.data;
+                socket.emit('joined-room', props.userInfo, room);                
                 navigate(`/app/room?Id=${res.data.roomID}`,{state : {room, userInformation}});
             })
             .catch((err) => console.error(err)); 

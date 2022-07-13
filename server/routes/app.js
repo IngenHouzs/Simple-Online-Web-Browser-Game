@@ -44,7 +44,7 @@ router.post('/', cors(), async (request, response) => {
         const hashedPassword = (password === null ? null : await bcrypt.hash(password, 10));        
 
         databaseInstance.collection(roomCollection).insertOne(
-            {...data, roomID, password : hashedPassword}, (err, res) => {
+            {...data, roomID, inGame : false,password : hashedPassword}, (err, res) => {
                 if (err) {
                     response.status(400).send("Invalid data format");
                     response.end();
