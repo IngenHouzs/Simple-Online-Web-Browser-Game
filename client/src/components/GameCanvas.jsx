@@ -92,7 +92,7 @@ export default function GameCanvas(props){
         playerImage.src = Player;        
         mapImage.onload = () => {
             map.drawImage(mapImage, 0,0);               
-            map.drawImage(playerImage, props.positionX, props.positionY, 10, 10);            
+            map.drawImage(playerImage, props.positionX, props.positionY, 12, 12);            
         }
     
 
@@ -110,14 +110,14 @@ export default function GameCanvas(props){
             socket.on('live-game-update', (data) => {                
                 for (let player of data){
                     if (player.username === props.userInfo.username) continue;                                     
-                    map.drawImage(playerImage, player.positionX, player.positionY, 10, 10);     
+                    map.drawImage(playerImage, player.positionX, player.positionY, 12, 12);     
                 }
             });                 
         } catch(err){}
        
 
         map.drawImage(mapImage, 0,0);           
-        map.drawImage(playerImage, props.positionX, props.positionY, 10, 10);      
+        map.drawImage(playerImage, props.positionX, props.positionY, 12, 12);      
 
         if (props.boundaryGrid[props.positionX/2, props.positionY/2] === 'b'){
             console.log('tembokkkkk', props.boundaryGrid[317][37]);
