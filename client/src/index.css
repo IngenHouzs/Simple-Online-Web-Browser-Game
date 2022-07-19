@@ -1214,6 +1214,13 @@ label.submenu-form-label, .horizontal-create-room-description{
   border-radius: 50%;
 }
 
+#map-canvas{
+  width:100%;
+  height:100%;
+}
+
+
+
 @media screen and (max-width:1350px){
   .room-list{
     grid-template-columns: 100%;

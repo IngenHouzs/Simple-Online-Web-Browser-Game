@@ -5,7 +5,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 
-const {database, databaseName, collectionName, roomCollection,usersList} = require('./database');
+const {database, databaseName, collectionName, roomCollection, gameDatabase,mapDatabase,usersList} = require('./database');
 const appAPI = require('./routes/app');
 const loginAPI = require('./routes/login');
 const signupAPI = require('./routes/signup');
@@ -21,6 +21,20 @@ const io = new Server(server, {
         origin : '*'
     }
 });
+
+
+
+let databasePromise;
+let databaseInstance;
+let findDatabaseName;
+
+const databaseInit = async () => {
+    databasePromise = database();
+    databaseInstance = await databasePromise;
+    findDatabaseName = await databaseInstance.db(databaseName);
+}
+
+databaseInit();
 
 io.on('connection', socket => {
     console.log("Someone connected.");
@@ -45,9 +59,7 @@ io.on('connection', socket => {
 
     socket.on('announce-new-room', async () => {
         try{
-            const databasePromise = database();
-            const databaseInstance = await databasePromise;
-            const findDatabaseName = await databaseInstance.db(databaseName);        
+      
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
             io.emit('update-rooms-list-client', getUpdatedRooms);
         }catch(err){console.error(err)}
@@ -63,26 +75,101 @@ io.on('connection', socket => {
             const databasePromise = database();
             const databaseInstance = await databasePromise;
             const findDatabaseName = await databaseInstance.db(databaseName); 
+
+            const roomInstance = await findDatabaseName.collection(roomCollection).find({roomName : roomInfo.roomName}).toArray();
+             
+            const playerListForGameSetup = roomInstance[0].playerList.map(player => 
+                ({...player,
+                    positionX : 0,
+                    positionY : 0,
+                    health : 100,
+                })
+            );  
+
+
+
             const changeInGameRoomStatus = await findDatabaseName.collection(roomCollection).updateOne(
                 {roomName : roomInfo.roomName},
                 {
                     $set : {
-                        inGame : true
+                        inGame : true,
+                        gameData : [...playerListForGameSetup]
                     }
                 }
             ) 
+            
+            const usersRoom = await findDatabaseName.collection(roomCollection).find({
+                roomName : roomInfo.roomName
+            }).toArray();
+    
+
+            io.to(roomInfo.roomName).emit('transfer-game-player-stats', usersRoom[0]);
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
             io.emit('update-rooms-list-client', getUpdatedRooms);
         } catch (err) {console.error(err)}
         io.to(roomInfo.roomName).emit('player-enter-game', callback);
     });
 
+    socket.on('initialize-player-ingame-data', async (room) => {
+        try{
+          
+            const findRoom = await findDatabaseName.collection(roomCollection).find({
+                roomName : room.roomName
+            }).toArray();
+            io.emit('transfer-game-player-stats', findRoom[0]);
+        } catch(err){console.error(err)}
+    });
+
+    // ingame socket connection {}
+
+
+
+
+    socket.on('change-player-stats', async (user, room, data) => {
+        try{
+  
+
+            const updateData = await findDatabaseName.collection(roomCollection).updateOne(
+                {roomName : room.roomName},
+                {   
+                    $set : {
+                        "gameData.$[users].positionX" : data.positionX,
+                        "gameData.$[users].positionY" : data.positionY,
+                        "gameData.$[users].playerCoordinate" : data.playerCoordinate,                        
+                        "gameData.$[users].health" : data.health                        
+                    }
+                },
+                {
+                    arrayFilters : [
+                        {"users.username" : user.username}
+                    ]
+                }
+            )
+
+        } catch (err){console.error(err)}
+    });
+
+    socket.on('request-map-data', async (room) => {
+        const getMapList = await findDatabaseName.collection(mapDatabase).find().toArray();
+        io.to(room.roomName).emit('receive-map-data', getMapList);
+    });
+
+
+
+    socket.on('live-server', async (room) => {
+        try{
+              
+            const getUsers = await findDatabaseName.collection(roomCollection).find(
+                {roomName : room.roomName}
+            ).toArray();
+            // console.log(getUsers[0].gameData);
+            io.to(room.roomName).emit('live-game-update', getUsers[0].gameData);
+        }catch(err){};
+    });
+
     socket.on('joined-room', async (user, room) => {
         try {
-            socket.join(room.roomName);            
-            const databasePromise = database();
-            const databaseInstance = await databasePromise;
-            const findDatabaseName = await databaseInstance.db(databaseName);     
+            socket.join(room.roomName);               
             const findUser = await findDatabaseName.collection(collectionName).updateOne(
                 {username : user.username}, 
                 {
@@ -97,18 +184,14 @@ io.on('connection', socket => {
             }).toArray();
             // getRoom.forEach((room) => console.log(JSON.stringify(room, null, 4)))
             
-            io.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);                
-            
+            io.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);                          
         } catch (err) {console.error(err, 'WKWKWK')}
     });
 
 
     socket.on('leaves-room', async (user, room) => {
         try {
-            socket.leave(room.roomName);            
-            const databasePromise = database();
-            const databaseInstance = await databasePromise;
-            const findDatabaseName = await databaseInstance.db(databaseName);              
+            socket.leave(room.roomName);                   
             const findUser = await findDatabaseName.collection(collectionName).updateOne(
                 {username : user.username}, 
                 {
@@ -121,9 +204,26 @@ io.on('connection', socket => {
             const getRoom = await findDatabaseName.collection(roomCollection).find({
                 roomName : room.roomName
             }).toArray();
-            console.log(getRoom);
             
-            socket.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);            
+            try{
+                const {gameData} = getRoom[0];
+                const removeUser = gameData.filter((player) => player.username !== user.username);
+                const updateGameData = await findDatabaseName.collection(roomCollection).updateOne(
+                {roomName : room.roomName},
+                {
+                    $set : {
+                        gameData : [...removeUser]
+                    }
+                });
+    
+                const updatedRooms = await findDatabaseName.collection(roomCollection).find({
+                    roomName : room.roomName
+                }).toArray();
+    
+               io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);        
+            } catch(err) {console.error(err)}
+     
+           socket.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);            
             
             
         } catch (err) {console.error(err)}
@@ -135,7 +235,7 @@ io.on('connection', socket => {
     socket.on('disconnect', async () => {
         try{           
             const index = onlineUsers.findIndex((user) => user.id === socket.id);
-            console.log(`User ${onlineUsers[index].user.username} logged out`);            
+            // console.log(`User ${onlineUsers[index].user.username} logged out`);            
             const databasePromise = database();
             const databaseInstance = await databasePromise;
             const findDatabaseName = await databaseInstance.db(databaseName);
@@ -185,7 +285,7 @@ io.on('connection', socket => {
                                 }
                             }
                         );
-                        console.log(playerIsHost, "MAMAMAMAMA");
+
                         if (playerIsHost.length > 0){
                             const roomPlayersList = playerIsHost[0].playerList;
                             const filterFromThisUser = roomPlayersList.filter((player) => player.username !== user[0].username); 
@@ -203,15 +303,38 @@ io.on('connection', socket => {
                     } 
     
                     const newRoomList = await findDatabaseName.collection(roomCollection).find().toArray();
-                    console.log(newRoomList);
+
                     for (let room of newRoomList){
                         if (room.roomName === findRoom[0].roomName){
-                            console.log(room.playerList);
-                            socket.to(room.roomName).emit('update-player-room', room.playerList, room);
-                            break;
+                            try{
+      
+                                const getRoom = await findDatabaseName.collection(roomCollection).find({
+                                    roomName : room.roomName
+                                }).toArray();
+                    
+                                const {gameData} = getRoom[0];
+
+        
+                                const removeUser = gameData.filter((player) => player.username !== onlineUsers[index].user.username);
+                                const updateGameData = await findDatabaseName.collection(roomCollection).updateOne(
+                                {roomName : room.roomName},
+                                {
+                                    $set : {
+                                        gameData : [...removeUser]
+                                    }
+                                });
+                    
+                                const updatedRooms = await findDatabaseName.collection(roomCollection).find({
+                                    roomName : room.roomName
+                                }).toArray();
+                    
+                               io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);  
+                            }catch(err) {console.error(err)}                             
+
+                           socket.to(room.roomName).emit('update-player-room', room.playerList, room);
+                           break;
                         }
                     }
-                    console.log(newRoomList);
                     io.emit('update-rooms-list-client', newRoomList);
                 }                
 
