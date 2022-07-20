@@ -38,7 +38,9 @@ export default function GameCanvas(props){
     },[]);
 
     useEffect(()=>{
-
+        
+        
+        
         const movementHandler = (e) => {
             switch(e.key){
                 case 'a' :
