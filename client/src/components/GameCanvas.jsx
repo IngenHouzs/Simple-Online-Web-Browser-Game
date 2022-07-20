@@ -44,28 +44,31 @@ export default function GameCanvas(props){
                 case 'a' :
 
                     try{   
-                        if (props.boundaryGrid[(props.positionX - 2) / 2][props.positionY / 2] === 'b') break;                        
+                        if (props.boundaryGrid[(props.positionX - 2) / 2][props.positionY / 2] === 'b' || 
+                            props.boundaryGrid[(props.positionX - 2) / 2][props.positionY / 2] === 'w') break;                        
                     }catch(err){}
                     props.setPositionLeft();   
                     break;
                 case 'd' : 
-               
                     try{
-                        if (props.boundaryGrid[(props.positionX + 2) / 2][props.positionY / 2] === 'b') break;     
+                        if (props.boundaryGrid[(props.positionX + 2) / 2][props.positionY / 2] === 'b' ||
+                        props.boundaryGrid[(props.positionX + 2) / 2][props.positionY / 2] === 'w') break;     
                     }catch(err){}           
                     props.setPositionRight();                     
                     break;               
                 case 's' : 
               
                     try{
-                        if (props.boundaryGrid[props.positionX / 2][(props.positionY + 2) / 2] === 'b') break;
+                        if (props.boundaryGrid[props.positionX / 2][(props.positionY + 2) / 2] === 'b' || 
+                        props.boundaryGrid[props.positionX / 2][(props.positionY + 2) / 2] === 'w') break;
                     }catch(err){}                                 
                     props.setPositionDown();                   
                     break;                
                 case 'w' : 
               
                     try{
-                        if (props.boundaryGrid[props.positionX / 2][(props.positionY - 2) / 2] === 'b') break;  
+                        if (props.boundaryGrid[props.positionX / 2][(props.positionY - 2) / 2] === 'b' || 
+                        props.boundaryGrid[props.positionX / 2][(props.positionY - 2) / 2] === 'w') break;  
                     }catch(err){}                                  
                     props.setPositionUp();                      
                     break;                

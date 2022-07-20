@@ -75,7 +75,13 @@ export default function Game(props){
                 try{
                     boundaryGrid[boundaries[0]][boundaries[1]] = 'b';
                 }catch(err){}
-            }            
+            }
+            for (let boundaries of props.mapChoice.walls){
+                try{
+                    boundaryGrid[boundaries[0]][boundaries[1]] = 'w';
+                } catch(err){}
+            }
+           
         }catch(err){}
 
 
