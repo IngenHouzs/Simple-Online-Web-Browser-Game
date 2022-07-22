@@ -39,6 +39,7 @@ export default function GameCanvas(props){
 
         const animate = () => {
             if(endAnimation) return;
+          
             socket.emit('live-server', props.roomInfo, null);
             window.requestAnimationFrame(animate);
         }
@@ -108,42 +109,54 @@ export default function GameCanvas(props){
         }        
 
         mapImage.src = chosenMap;
-        playerImage.src = Player;          
-
-
-
-
+        playerImage.src = Player; 
+        
 
         socket.on('create-projectile', (target, position, shooter) => {
 
-            console.log(position, target);
+            
             const {posX, posY} = position;
             const {targetX, targetY} = target;
 
+            const angle = Math.atan2(
+                targetY - posY,
+                targetX - posX
+            )
+
             map.fillStyle = 'orange'; 
 
-            // console.log(props.boundaryGrid);
-            // for (let i = posX + 6;i < targetX;i++){ 
-            //     try{
-            //         if (props.boundaryGrid[i/2][(posY+6)/2] === 'w') break;
-            //     } catch(err){}
-            //     map.fillRect(i, posY, 4, 4);    
-            //     console.log('kw');
-            // } 
-
-            let start = posX + 6;
-            const bulletPeriod = setInterval(() => {
-                try{                     
-                    if (start === targetX || props.boundaryGrid[start/2][(posY)/2] === 'w' ){
-                        clearInterval(bulletPeriod);
+            const bulletAnimate = (startX, startY,velocityX, velocityY) => {
+                map.fillRect(startX-3, startY-3, 6, 6);
+                try{
+                    if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w') {
+                        window.cancelAnimationFrame(bulletAnimate);
+                        return;
                     }
-                } catch(err){}
-                map.drawImage(mapImage, 0, 0);  //  
-                map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                     
-                map.fillRect(start++, posY, 4, 4);
-            },5);
+                }catch(err){}
+
+                window.requestAnimationFrame(() => bulletAnimate(startX+velocityX, startY+velocityY, velocityX, velocityY));
+            }            
 
 
+            let startX = posX;
+            let startY = posY;
+
+            const velocityX = Math.cos(angle) * 2;
+            const velocityY = Math.sin(angle) * 2;
+
+            console.log('shoot');
+            bulletAnimate(startX, startY,velocityX, velocityY);
+            // const bulletPeriod = setInterval(() => {
+            //     try{                     
+            //         if (start === targetX || props.boundaryGrid[start/2][(posY)/2] === 'w' ){
+            //             clearInterval(bulletPeriod);
+            //         }
+            //     } catch(err){}
+            //     // map.drawImage(mapImage, 0, 0);  //  
+                 
+            //     map.fillRect(start, posY, 6, 6);
+            //     start += 1;                
+            // },10); 
         });        
     
 
@@ -169,7 +182,8 @@ export default function GameCanvas(props){
 
         try{
             socket.on('live-game-update', (data) => {                
-                map.drawImage(mapImage, 0, 0) //               
+                map.drawImage(mapImage, 0, 0) //    
+                map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){
                     if (player.username === props.userInfo.username) continue;  
                     map.drawImage(playerImage, player.positionX-6, player.positionY-6, 12, 12);
