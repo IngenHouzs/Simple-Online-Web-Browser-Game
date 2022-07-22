@@ -17,15 +17,29 @@ export default function GameCanvas(props){
     const [gridIsSet, setGridIsSet] = useState(false);
 
 
+    const [canvasPositionX, setCanvasPositionX] = useState(0);
+    const [canvasPositionY, setCanvasPositionY] = useState(0);
+
+
+
+    const shootHandler = (e) => {
+        const targetX = e.clientX - canvasPositionX;
+        const targetY = e.clientY - canvasPositionY;
+        const posX = props.positionX;
+        const posY = props.positionY; 
+        socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo);
+    }
+
 
     useEffect(()=>{
 
-  
 
-     
+        setCanvasPositionX(mapCanvasRef.current.offsetLeft);
+        setCanvasPositionY(mapCanvasRef.current.offsetTop);
+
         const animate = () => {
             if(endAnimation) return;
-            socket.emit('live-server', props.roomInfo);
+            socket.emit('live-server', props.roomInfo, null);
             window.requestAnimationFrame(animate);
         }
         
@@ -38,48 +52,69 @@ export default function GameCanvas(props){
     },[]);
 
     useEffect(()=>{
-        
-        
-        
+                
+
+
         const movementHandler = (e) => {
             switch(e.key){
                 case 'a' :
 
                     try{   
-                        if (props.boundaryGrid[(props.positionX - 2) / 2][props.positionY / 2] === 'b' || 
-                            props.boundaryGrid[(props.positionX - 2) / 2][props.positionY / 2] === 'w') break;                        
+                        if (props.boundaryGrid[Math.floor((props.positionX - 2) / 2)][Math.floor(props.positionY / 2)] === 'b' || 
+                            props.boundaryGrid[Math.floor((props.positionX - 2) / 2)][Math.floor(props.positionY / 2)] === 'w') break;                        
                     }catch(err){}
                     props.setPositionLeft();   
                     break;
                 case 'd' : 
                     try{
-                        if (props.boundaryGrid[(props.positionX + 2) / 2][props.positionY / 2] === 'b' ||
-                        props.boundaryGrid[(props.positionX + 2) / 2][props.positionY / 2] === 'w') break;     
+                        if (props.boundaryGrid[Math.floor((props.positionX + 2) / 2)][Math.floor(props.positionY / 2)] === 'b' ||
+                        props.boundaryGrid[Math.floor((props.positionX + 2) / 2)][Math.floor(props.positionY / 2)] === 'w') break;     
                     }catch(err){}           
                     props.setPositionRight();                     
                     break;               
                 case 's' : 
               
                     try{
-                        if (props.boundaryGrid[props.positionX / 2][(props.positionY + 2) / 2] === 'b' || 
-                        props.boundaryGrid[props.positionX / 2][(props.positionY + 2) / 2] === 'w') break;
+                        if (props.boundaryGrid[Math.floor(props.positionX / 2)][Math.floor((props.positionY + 2) / 2)] === 'b' || 
+                        props.boundaryGrid[Math.floor(props.positionX / 2)][Math.floor((props.positionY + 2) / 2)] === 'w') break;
                     }catch(err){}                                 
                     props.setPositionDown();                   
                     break;                
                 case 'w' : 
               
                     try{
-                        if (props.boundaryGrid[props.positionX / 2][(props.positionY - 2) / 2] === 'b' || 
-                        props.boundaryGrid[props.positionX / 2][(props.positionY - 2) / 2] === 'w') break;  
+                        if (props.boundaryGrid[Math.floor(props.positionX / 2)][Math.floor((props.positionY - 2) / 2)] === 'b' || 
+                        props.boundaryGrid[Math.floor(props.positionX / 2)][Math.floor((props.positionY - 2) / 2)] === 'w') break;  
                     }catch(err){}                                  
                     props.setPositionUp();                      
                     break;                
             }
         }
-        window.addEventListener('keypress', movementHandler);         
+        window.addEventListener('keypress', movementHandler);  
 
         const canvas = mapCanvasRef.current;
         const map = canvas.getContext('2d');
+
+
+        socket.on('create-projectile', (target, position, shooter) => {
+
+            console.log(position, target);
+            const {posX, posY} = position;
+            const {targetX, targetY} = target;
+
+            map.fillStyle = 'orange'; 
+
+            // console.log(props.boundaryGrid);
+            for (let i = posX + 6;i < targetX;i++){ 
+                try{
+                    if (props.boundaryGrid[i/2][(posY+6)/2] === 'w') break;
+                } catch(err){}
+                map.fillRect(i, posY, 4, 4);    
+                console.log('kw');
+            }
+
+
+        });        
     
         const mapImage = new Image();
         const playerImage = new Image();
@@ -97,7 +132,8 @@ export default function GameCanvas(props){
         playerImage.src = Player;        
         mapImage.onload = () => {
             map.drawImage(mapImage, 0,0);               
-            map.drawImage(playerImage, props.positionX, props.positionY, 12, 12);            
+            map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);    
+            // map.drawImage(playerImage, -6, -6, 12, 12);                       
         }
     
 
@@ -113,26 +149,36 @@ export default function GameCanvas(props){
 
         try{
             socket.on('live-game-update', (data) => {                
+                // map.drawImage(mapImage, 0, 0)                
                 for (let player of data){
-                    if (player.username === props.userInfo.username) continue;                                     
-                    map.drawImage(playerImage, player.positionX, player.positionY, 12, 12);     
+                    if (player.username === props.userInfo.username) continue;  
+                    map.drawImage(playerImage, player.positionX-6, player.positionY-6, 12, 12);
+                    // map.drawImage(playerImage, -6, -6, 12, 12);                      
+                    // map.fillStyle = 'orange';
+                    // map.fillRect(0,0,8,8);                       
                 }
             });                 
         } catch(err){}
        
 
         map.drawImage(mapImage, 0,0);           
-        map.drawImage(playerImage, props.positionX, props.positionY, 12, 12);      
+        map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);   
+        // map.drawImage(playerImage, -6, -6, 12, 12);              
+
+        
 
         if (props.boundaryGrid[props.positionX/2, props.positionY/2] === 'b'){
             console.log('tembokkkkk', props.boundaryGrid[317][37]);
         }
-        return () =>  window.removeEventListener('keypress', movementHandler);  
+        return () =>  {
+            window.removeEventListener('keypress', movementHandler);  
+
+        }
         
     },[props.positionX, props.positionY, refresher]);
 
     return <div id="game-canvas" ref={mapCanvasWrapperRef}>
-        <canvas id="map-canvas" ref={mapCanvasRef} width={1181} height={632}>
+        <canvas id="map-canvas" ref={mapCanvasRef} width={1181} height={632} onClick={shootHandler}>
             <img src={Map} alt="#"/>
         </canvas>
     </div>    

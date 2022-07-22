@@ -70,6 +70,11 @@ io.on('connection', socket => {
         console.log(sender, message);
     });
 
+
+    socket.on('player-shoot', (target, position, shooter, room) => {
+        io.to(room.roomName).emit('create-projectile',target, position, shooter);
+    });
+
     socket.on('host-start-game', async (roomInfo, callback) => {
         try{
             const databasePromise = database();
@@ -156,13 +161,18 @@ io.on('connection', socket => {
 
 
 
-    socket.on('live-server', async (room) => {
+    socket.on('live-server', async (room,bulletInfo) => {
         try{
               
             const getUsers = await findDatabaseName.collection(roomCollection).find(
                 {roomName : room.roomName}
             ).toArray();
-            // console.log(getUsers[0].gameData);
+
+            try{
+                // error klo gk lagi nembak
+            } catch(err){}
+
+
             io.to(room.roomName).emit('live-game-update', getUsers[0].gameData);
         }catch(err){};
     });
