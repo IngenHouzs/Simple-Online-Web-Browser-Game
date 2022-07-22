@@ -95,6 +95,24 @@ export default function GameCanvas(props){
         const canvas = mapCanvasRef.current;
         const map = canvas.getContext('2d');
 
+        const mapImage = new Image();
+        const playerImage = new Image();        
+
+        let chosenMap;
+        if (props.mapNumber === 0){
+            chosenMap = Map;
+        } else if (props.mapNumber === 1){
+            chosenMap = Map;
+        } else if (props.mapNumber === 2){
+            chosenMap = Map;
+        }        
+
+        mapImage.src = chosenMap;
+        playerImage.src = Player;          
+
+
+
+
 
         socket.on('create-projectile', (target, position, shooter) => {
 
@@ -105,31 +123,33 @@ export default function GameCanvas(props){
             map.fillStyle = 'orange'; 
 
             // console.log(props.boundaryGrid);
-            for (let i = posX + 6;i < targetX;i++){ 
-                try{
-                    if (props.boundaryGrid[i/2][(posY+6)/2] === 'w') break;
+            // for (let i = posX + 6;i < targetX;i++){ 
+            //     try{
+            //         if (props.boundaryGrid[i/2][(posY+6)/2] === 'w') break;
+            //     } catch(err){}
+            //     map.fillRect(i, posY, 4, 4);    
+            //     console.log('kw');
+            // } 
+
+            let start = posX + 6;
+            const bulletPeriod = setInterval(() => {
+                try{                     
+                    if (start === targetX || props.boundaryGrid[start/2][(posY)/2] === 'w' ){
+                        clearInterval(bulletPeriod);
+                    }
                 } catch(err){}
-                map.fillRect(i, posY, 4, 4);    
-                console.log('kw');
-            }
+                map.drawImage(mapImage, 0, 0);  //  
+                map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                     
+                map.fillRect(start++, posY, 4, 4);
+            },5);
 
 
         });        
     
-        const mapImage = new Image();
-        const playerImage = new Image();
-        
-        let chosenMap;
-        if (props.mapNumber === 0){
-            chosenMap = Map;
-        } else if (props.mapNumber === 1){
-            chosenMap = Map;
-        } else if (props.mapNumber === 2){
-            chosenMap = Map;
-        }
 
-        mapImage.src = chosenMap;
-        playerImage.src = Player;        
+        
+
+      
         mapImage.onload = () => {
             map.drawImage(mapImage, 0,0);               
             map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);    
@@ -149,7 +169,7 @@ export default function GameCanvas(props){
 
         try{
             socket.on('live-game-update', (data) => {                
-                // map.drawImage(mapImage, 0, 0)                
+                map.drawImage(mapImage, 0, 0) //               
                 for (let player of data){
                     if (player.username === props.userInfo.username) continue;  
                     map.drawImage(playerImage, player.positionX-6, player.positionY-6, 12, 12);
@@ -167,9 +187,6 @@ export default function GameCanvas(props){
 
         
 
-        if (props.boundaryGrid[props.positionX/2, props.positionY/2] === 'b'){
-            console.log('tembokkkkk', props.boundaryGrid[317][37]);
-        }
         return () =>  {
             window.removeEventListener('keypress', movementHandler);  
 
