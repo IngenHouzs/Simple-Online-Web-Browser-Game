@@ -39,7 +39,6 @@ export default function GameCanvas(props){
 
         const animate = () => {
             if(endAnimation) return;
-          
             socket.emit('live-server', props.roomInfo, null);
             window.requestAnimationFrame(animate);
         }
@@ -128,7 +127,31 @@ export default function GameCanvas(props){
             const bulletAnimate = (startX, startY,velocityX, velocityY) => {
                 map.fillRect(startX-3, startY-3, 6, 6);
                 try{
-                    if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w') {
+                    const offsetX = Math.floor((props.positionX-6)/2);
+                    const offsetY = Math.floor((props.positionY-6)/2); 
+                     
+                    const playerBodyArea = [];
+                    for (let h = offsetX; h < offsetX + 6;h++){
+                        for (let v = offsetY; v < offsetY + 6;v++){
+                            playerBodyArea.push([h, v]);
+                        }
+                    }
+
+
+                    const bulletPosition = [Math.floor(startX/2), Math.floor(startY/2)]; 
+                    console.log(bulletPosition, 'mhm');
+                    console.log(playerBodyArea[0], playerBodyArea[1], playerBodyArea[2], playerBodyArea[3], playerBodyArea[4], playerBodyArea[5], playerBodyArea[6], playerBodyArea[7]);                    
+                    if (playerBodyArea.includes(bulletPosition)){
+                        window.cancelAnimationFrame(bulletAnimate);
+                        console.log("KENNAAAAAAAAA");
+                        return;
+                    }
+
+                    if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w' ||
+                        bulletPosition[0] < 0 || bulletPosition[1] < 0 ||
+                        bulletPosition[0] > 1182 || bulletPosition[1] > 682
+                    ) {
+                        console.log('nabrak');
                         window.cancelAnimationFrame(bulletAnimate);
                         return;
                     }
@@ -181,7 +204,8 @@ export default function GameCanvas(props){
         });
 
         try{
-            socket.on('live-game-update', (data) => {                
+            socket.on('live-game-update', (data) => {  
+                props.setPlayersStatsHandler(data);
                 map.drawImage(mapImage, 0, 0) //    
                 map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){

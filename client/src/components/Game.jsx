@@ -44,8 +44,12 @@ export default function Game(props){
     const [positionY, setPositionY] = useState(0);
     const [enemyList, setEnemyList] = useState(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username))
 
+    const [playersStats, setPlayersStats] = useState(props.roomInfo.gameData);
+
     const [row, setRow] = useState(1180);
-    const [column, setColumn] = useState(632);
+    const [column, setColumn] = useState(632); 
+
+    
     
     const [boundaryGrid, setBoundaryGrid] = useState(() => {
         let grid = [];
@@ -64,6 +68,7 @@ export default function Game(props){
 
     const [playerCoordinate, setPlayerCoordinate] = useState({x : 0, y : 0});
 
+    const setPlayersStatsHandler = (data) => setPlayersStats(data);
     
 
 
@@ -115,63 +120,22 @@ export default function Game(props){
 
         ref.current.style.setProperty('width', `100%`, 'important');
                          
-
-
-        // const movementHandler = (e) => {
-        //     switch(e.key){
-        //         case 'a' :
-        //             console.log(positionX/2, positionY/2, 'emem');
-        //             try{   
-        //                 console.log(boundaryGrid[(positionX - 2) / 2][positionY / 2], 'kwwkwkw');
-        //                 if (boundaryGrid[(positionX - 2) / 2][positionY / 2] === 'b') break;                        
-        //             }catch(err){}
-        //             setPositionX((positionX) => positionX - 2);
-        //             setPlayerCoordinate(() => ({
-        //                 x : positionX / 2, y : positionY / 2
-        //             }));                    
-        //             // console.log(playerCoordinate, positionX, positionY)    
-        //             break;
-        //         case 'd' : 
-        //             try{
-        //                 if (boundaryGrid[(positionX + 2) / 2][positionY / 2] === 'b') break;     
-        //             }catch(err){}           
-        //             setPositionX((positionX) => positionX + 2);
-        //             setPlayerCoordinate(() => ({
-        //                 x : positionX / 2, y : positionY / 2
-        //             }));                        
-        //             // console.log(playerCoordinate, positionX, positionY)                       
-        //             break;               
-        //         case 's' : 
-        //             try{
-        //                 if (boundaryGrid[positionX / 2][(positionY + 2) / 2] === 'b') break;
-        //             }catch(err){}                                 
-        //             setPositionY((positionY) => positionY + 2);
-        //             setPlayerCoordinate(() => ({
-        //                 x : positionX / 2, y : positionY / 2
-        //             }));                        
-        //             // console.log(playerCoordinate, positionX, positionY)                     
-        //             break;                
-        //         case 'w' : 
-        //             try{
-        //                 if (boundaryGrid[positionX / 2][(positionY - 2) / 2] === 'b') break;  
-        //             }catch(err){}                                  
-        //             setPositionY((positionY) => positionY - 2);
-        //             setPlayerCoordinate(() => ({
-        //                 x : positionX / 2, y : positionY / 2
-        //             }));                        
-        //             // console.log(playerCoordinate, positionX, positionY)                         
-        //             break;                
-        //     }
-        // }
-        // window.addEventListener('keypress', movementHandler);   
-
-        // return () => {window.removeEventListener('keypress', movementHandler)}
-
     }, []);
 
 
     useEffect(() => {
         setEnemyList(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username));
+        setPlayersStats(props.roomInfo.gameData);
+        // for (let player of playersStats){ 
+        //     const {x, y} = player.playerCoordinate;
+        //     const topLeftX = x - 3;
+        //     const topLeftY = y - 3;
+        //     for (let h = topLeftX; h < topLeftX+6;h++){
+        //         for (let v = topLeftY; v < topLeftY+6;v++){
+        //             boundaryGrid[h][v] = 'P';
+        //         }
+        //     }
+
     },[props.roomInfo])
 
 
@@ -203,6 +167,8 @@ export default function Game(props){
         <div className="game-tools">
             <GameCanvas playerCoordinate={playerCoordinate}  
                         setPlayerCoordinate={setPlayerCoordinate}
+                        setPlayersStatsHandler={setPlayersStatsHandler}
+                        playersStats={playersStats}
                         boundaryGrid={boundaryGrid}
                         mapChoice={props.mapChoice} 
                         mapNumber={props.mapNumber} 
