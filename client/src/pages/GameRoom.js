@@ -18,10 +18,14 @@ export default function GameRoom(props){
     const [roomInfo, setRoomInfo] = useState(RoomInfo);
     const [userInfo, setUserInfo] = useState(UserInfo);
     const [startGame, setStartGame] = useState(false);
-    const [closeChat, setCloseChat] = useState(false); 
+    const [closeChat, setCloseChat] = useState(false);  
+
+    const [gameData, setGameData] = useState(false);
 
     const [mapList, setMapList] = useState(null);
     const [map, setMap] = useState(0);
+
+
 
 
     const setStartGameHandler = async () => {
@@ -32,6 +36,11 @@ export default function GameRoom(props){
     }
 
 
+    // socket.on('transfer-game-player-stats', data => {
+    //     setGameData([...data.gameData]);
+    //     // console.log('gameRoom', data.gameData);
+    //     // console.log('ganedata', gameData);
+    // });    
 
     const allClientStartGame = () => setStartGame(true);
 
@@ -89,7 +98,12 @@ export default function GameRoom(props){
         socket.on('receive-map-data', (data) => {
             setMapList(data);
         });
-
+        socket.on('transfer-game-player-stats', async (data) => {
+            await setGameData([...data.gameData]); 
+            // console.log('bucks', data.gameData);
+            // console.log('gameRoom', data.gameData);
+            // console.log('ganedata', gameData);
+        });
 
         return () => playerLeavesRoomListener();
     },[]);
@@ -97,7 +111,7 @@ export default function GameRoom(props){
     return <div id="game-room">
         {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler}/> : null}
         {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
-        {startGame ? <Game closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo}/> : null}
+        {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo}/> : null}
         {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}
     </div>
 }

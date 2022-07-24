@@ -42,12 +42,14 @@ export default function Game(props){
     const [health, setHealth] = useState(100);
     const [positionX, setPositionX] = useState(0);
     const [positionY, setPositionY] = useState(0);
-    const [enemyList, setEnemyList] = useState(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username))
+    const [enemyList, setEnemyList] = useState(props.gameData);
 
-    const [playersStats, setPlayersStats] = useState(props.roomInfo.gameData);
+    const [playersStats, setPlayersStats] = useState(props.gameData);
 
     const [row, setRow] = useState(1180);
     const [column, setColumn] = useState(632); 
+
+    const [damage, setDamage] = useState(10);
 
     
     
@@ -56,8 +58,6 @@ export default function Game(props){
         for (let i = 0; i <= row/2; i += 1){
             grid[i] = new Array(column/2);
         }
-
-
         return grid;
     });
 
@@ -69,11 +69,21 @@ export default function Game(props){
     const [playerCoordinate, setPlayerCoordinate] = useState({x : 0, y : 0});
 
     const setPlayersStatsHandler = (data) => setPlayersStats(data);
+    const setHealthHandler = (HP) => setHealth(HP);
+    const setEnemyListHandler = (data) => setEnemyList([...data]);
     
 
+    const renderEnemyList = () => {
+        try{
+        return enemyList.map((player) => <PlayerCard player={player} health={player.health} roomInfo={props.roomInfo}/>)        
+        }catch(err){console.error(err)}
+    }
 
-    useEffect(() => {
-        props.setCloseChatToTrue();
+
+    useEffect(() => {   
+        setEnemyList(props.gameData);
+        
+        props.setCloseChatToTrue(); 
 
         try {
             for (let boundaries of props.mapChoice.boundaries){
@@ -97,7 +107,8 @@ export default function Game(props){
             // for constant changes throughout the game, will be done with another socket call
             //      by accessing its index directly (don't have to go through loop).
             try{
-                const gameData = data.gameData;;
+                const gameData = data.gameData;
+                // setEnemyList(data.gameData);
                 for (let player in gameData){
                     if (gameData[player].username === props.userInfo.username){
                         setHealth(100);   
@@ -109,7 +120,7 @@ export default function Game(props){
                 }
                 setPositionX(props.mapChoice.startingPosition[playerIndex][0]);
                 setPositionY(props.mapChoice.startingPosition[playerIndex][1]);
-                
+      
                 setPlayerCoordinate((playerCoordinate) => ({
                     x : positionX / 2, y : positionY / 2
                 }));    
@@ -119,24 +130,33 @@ export default function Game(props){
 
 
         ref.current.style.setProperty('width', `100%`, 'important');
+
+        // socket.on('update-player-stats', (data) => {
+        //     setPlayersStats(data);
+        //     setEnemyList(data);
+        //     console.log('data', data);
+        //     console.log(enemyList, 'huhuhu');
+        // });
+
+
+        // setInterval(() => console.log(enemyList,'----'), 3000);
+
                          
     }, []);
 
 
-    useEffect(() => {
-        setEnemyList(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username));
-        setPlayersStats(props.roomInfo.gameData);
-        // for (let player of playersStats){ 
-        //     const {x, y} = player.playerCoordinate;
-        //     const topLeftX = x - 3;
-        //     const topLeftY = y - 3;
-        //     for (let h = topLeftX; h < topLeftX+6;h++){
-        //         for (let v = topLeftY; v < topLeftY+6;v++){
-        //             boundaryGrid[h][v] = 'P';
-        //         }
-        //     }
 
+
+    useEffect(() => { 
+        // setEnemyList(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username));
+        
+        setPlayersStats(props.roomInfo.gameData);
     },[props.roomInfo])
+
+
+    useEffect(()=> {
+        // console.log(enemyList, 'els');
+    }, [enemyList])
 
 
     return <div id="game">
@@ -146,7 +166,7 @@ export default function Game(props){
 
         <div className="ingame-player-status-wrapper">
             <div className="not-self-player">
-                {enemyList.map((player) => <PlayerCard player={player} health={100} roomInfo={props.roomInfo}/>)}
+                {renderEnemyList()}
             </div>
             <div className="self-player">  
                 <div className="ingame-player-card self-player-card" style={{flexDirection:'row-reverse', backgroundColor:'grey'}}>
@@ -182,7 +202,10 @@ export default function Game(props){
                         setPositionUp={setPositionUp}
                         roomInfo={props.roomInfo} 
                         userInfo={props.userInfo} 
-                        health={health}/>
+                        health={health}
+                        setHealthHandler={setHealthHandler}
+                        setEnemyListHandler={setEnemyListHandler}
+                        damage={damage}/>
             <id id="player-utilities">
                 <button className="skill">Skill 1</button>
                 <button className="skill">Skill 2</button>

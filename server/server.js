@@ -107,7 +107,6 @@ io.on('connection', socket => {
                 roomName : roomInfo.roomName
             }).toArray();
     
-
             io.to(roomInfo.roomName).emit('transfer-game-player-stats', usersRoom[0]);
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
             io.emit('update-rooms-list-client', getUpdatedRooms);
@@ -121,7 +120,7 @@ io.on('connection', socket => {
             const findRoom = await findDatabaseName.collection(roomCollection).find({
                 roomName : room.roomName
             }).toArray();
-            io.emit('transfer-game-player-stats', findRoom[0]);
+            io.to(room.roomName).emit('transfer-game-player-stats', findRoom[0]);
         } catch(err){console.error(err)}
     });
 
@@ -159,6 +158,37 @@ io.on('connection', socket => {
         io.to(room.roomName).emit('receive-map-data', getMapList);
     });
 
+    socket.on('bullet-hit', async (room, shooter, victimData, damage) => {
+        try{
+            const currentData = await findDatabaseName.collection(roomCollection).find({
+                roomName : room.roomName
+            }).toArray();
+            const gameData = currentData[0].gameData;
+            const findVictimData = gameData.find((user) => user.username === victimData.username);
+            if (findVictimData){
+                const findVictim = await findDatabaseName.collection(roomCollection).updateOne(
+                    {roomName : room.roomName}, 
+                    {
+                        $set : {
+                            "gameData.$[users].health" : findVictimData.health - damage
+                        }
+                    }, 
+                    {
+                        arrayFilters : [
+                            {'users.username' : victimData.username}
+                        ]
+                    }
+                );      
+                const newData = await findDatabaseName.collection(roomCollection).find({
+                    roomName : room.roomName
+                }).toArray();
+                const newGameData = newData[0].gameData;            
+                console.log(shooter, 'shoots', victimData.username, newGameData);
+                io.to(room.roomName).emit('update-player-stats', newGameData);                      
+            }     
+        }catch(err){}
+    });
+
 
 
     socket.on('live-server', async (room,bulletInfo) => {
@@ -172,7 +202,10 @@ io.on('connection', socket => {
                 // error klo gk lagi nembak
             } catch(err){}
 
-
+            // console.log(getUsers[0].gameData);
+            // console.log('------');
+            // console.log(getUsers[0].gameData[0], getUsers[0].gameData[1]);            
+            // console.log('------');            
             io.to(room.roomName).emit('live-game-update', getUsers[0].gameData);
         }catch(err){};
     });

@@ -124,7 +124,7 @@ export default function GameCanvas(props){
 
             map.fillStyle = 'orange'; 
 
-            const bulletAnimate = (startX, startY,velocityX, velocityY, shooter) => {
+            const bulletAnimate = (startX, startY,velocityX, velocityY, shooter, damage) => {
                 map.fillRect(startX-3, startY-3, 6, 6);
                 try{ 
                     const bulletPosition = [Math.floor(startX/2), Math.floor(startY/2)]
@@ -140,26 +140,24 @@ export default function GameCanvas(props){
                     } 
                     
                     const playerIsHit = playerBodyArea.find((position) => position[0] == bulletPosition[0] && position[1] == bulletPosition[1])
+                    // console.log(playerIsHit, shooter, 'mmh');
                     if (playerIsHit && shooter !== props.userInfo.username){
-                        console.log('ketembak luuuu');
+                        console.log("HITTT");
+                        socket.emit('bullet-hit', props.roomInfo, shooter, props.userInfo, props.damage);
                         window.cancelAnimationFrame(bulletAnimate);
                         return;                        
-                    }
+                    } 
 
                     if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w' ||
                         bulletPosition[0] < 0 || bulletPosition[1] < 0 ||
                         bulletPosition[0] > 1182 || bulletPosition[1] > 682
                     ) {
-                        console.log(props.positionX/2, props.positionY/2);
-                        console.log(bulletPosition);
-                        console.log(playerBodyArea);
-                        console.log('nabrak');
                         window.cancelAnimationFrame(bulletAnimate);
                         return;
                     }
                 }catch(err){}
 
-                window.requestAnimationFrame(() => bulletAnimate(startX+velocityX, startY+velocityY, velocityX, velocityY, shooter));
+                window.requestAnimationFrame(() => bulletAnimate(startX+velocityX, startY+velocityY, velocityX, velocityY, shooter, damage));
             }            
 
 
@@ -169,8 +167,9 @@ export default function GameCanvas(props){
             const velocityX = Math.cos(angle) * 2;
             const velocityY = Math.sin(angle) * 2;
 
-            console.log('shoot');
-            bulletAnimate(startX, startY,velocityX, velocityY, shooter);
+
+            bulletAnimate(startX, startY,velocityX, velocityY, shooter, props.damage);
+
             // const bulletPeriod = setInterval(() => {
             //     try{                     
             //         if (start === targetX || props.boundaryGrid[start/2][(posY)/2] === 'w' ){
@@ -208,6 +207,8 @@ export default function GameCanvas(props){
         try{
             socket.on('live-game-update', (data) => {  
                 props.setPlayersStatsHandler(data);
+                props.setEnemyListHandler(data);
+
                 map.drawImage(mapImage, 0, 0) //    
                 map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){
