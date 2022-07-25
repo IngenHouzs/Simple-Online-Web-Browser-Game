@@ -98,12 +98,17 @@ export default function GameRoom(props){
         socket.on('receive-map-data', (data) => {
             setMapList(data);
         });
-        socket.on('transfer-game-player-stats', async (data) => {
-            await setGameData([...data.gameData]); 
+        socket.on('transfer-game-player-stats', (data) => {
+            setGameData([...data.gameData]);  
+            
             // console.log('bucks', data.gameData);
             // console.log('gameRoom', data.gameData);
             // console.log('ganedata', gameData);
         });
+
+        // socket.on('live-game-update', data => {
+        //     setGameData([...data]);
+        // })
 
         return () => playerLeavesRoomListener();
     },[]);

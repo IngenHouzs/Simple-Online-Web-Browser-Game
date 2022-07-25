@@ -44,7 +44,9 @@ export default function Game(props){
     const [positionY, setPositionY] = useState(0);
     const [enemyList, setEnemyList] = useState(props.gameData);
 
-    const [playersStats, setPlayersStats] = useState(props.gameData);
+    const [isDead, setIsDead] = useState(false);
+
+    // const [playersStats, setPlayersStats] = useState(props.gameData);
 
     const [row, setRow] = useState(1180);
     const [column, setColumn] = useState(632); 
@@ -68,21 +70,12 @@ export default function Game(props){
 
     const [playerCoordinate, setPlayerCoordinate] = useState({x : 0, y : 0});
 
-    const setPlayersStatsHandler = (data) => setPlayersStats(data);
     const setHealthHandler = (HP) => setHealth(HP);
-    const setEnemyListHandler = (data) => setEnemyList([...data]);
+
     
-
-    const renderEnemyList = () => {
-        try{
-        return enemyList.map((player) => <PlayerCard player={player} health={player.health} roomInfo={props.roomInfo}/>)        
-        }catch(err){console.error(err)}
-    }
-
-
     useEffect(() => {   
-        setEnemyList(props.gameData);
-        
+        // setEnemyList(props.gameData);
+        console.log("WKKWKWKWKKWKWKKWKKWKWKWKKWKW");
         props.setCloseChatToTrue(); 
 
         try {
@@ -103,15 +96,15 @@ export default function Game(props){
         socket.emit('initialize-player-ingame-data', props.roomInfo);
 
         socket.on('transfer-game-player-stats', (data) => {
-            // only run at the first game initialization (first render) OR whenever user leaves / disconnect.
-            // for constant changes throughout the game, will be done with another socket call
-            //      by accessing its index directly (don't have to go through loop).
+
+
             try{
                 const gameData = data.gameData;
-                // setEnemyList(data.gameData);
+                setEnemyList(gameData);
+                // console.log("ehehehheeh", enemyList[1]);
                 for (let player in gameData){
                     if (gameData[player].username === props.userInfo.username){
-                        setHealth(100);   
+                        // setHealth(100);   
                         setPositionX(props.mapChoice.startingPosition[player][0]);
                         setPositionY(props.mapChoice.startingPosition[player][1]);
                         setPlayerIndex(player);
@@ -129,6 +122,12 @@ export default function Game(props){
         });
 
 
+        socket.on('player-death', user => {
+            if (user.username !== props.userInfo.username) return;
+            setIsDead(true);
+            console.log('u deeeed');
+        });
+
         ref.current.style.setProperty('width', `100%`, 'important');
 
         // socket.on('update-player-stats', (data) => {
@@ -141,6 +140,13 @@ export default function Game(props){
 
         // setInterval(() => console.log(enemyList,'----'), 3000);
 
+        // socket.on('update-player-stats', data => {
+
+        //     setEnemyListHandler(data.gameData);
+
+        // });      
+        
+          
                          
     }, []);
 
@@ -148,15 +154,10 @@ export default function Game(props){
 
 
     useEffect(() => { 
-        // setEnemyList(() => props.roomInfo.playerList.filter((player) => player.username !== props.userInfo.username));
+
         
-        setPlayersStats(props.roomInfo.gameData);
+        // setPlayersStats(props.roomInfo.gameData);
     },[props.roomInfo])
-
-
-    useEffect(()=> {
-        // console.log(enemyList, 'els');
-    }, [enemyList])
 
 
     return <div id="game">
@@ -166,7 +167,7 @@ export default function Game(props){
 
         <div className="ingame-player-status-wrapper">
             <div className="not-self-player">
-                {renderEnemyList()}
+                {/* { enemyList ? (enemyList.map((player) => <PlayerCard player={player} health={player.health} roomInfo={props.roomInfo}/>)) : null} */}
             </div>
             <div className="self-player">  
                 <div className="ingame-player-card self-player-card" style={{flexDirection:'row-reverse', backgroundColor:'grey'}}>
@@ -187,8 +188,6 @@ export default function Game(props){
         <div className="game-tools">
             <GameCanvas playerCoordinate={playerCoordinate}  
                         setPlayerCoordinate={setPlayerCoordinate}
-                        setPlayersStatsHandler={setPlayersStatsHandler}
-                        playersStats={playersStats}
                         boundaryGrid={boundaryGrid}
                         mapChoice={props.mapChoice} 
                         mapNumber={props.mapNumber} 
@@ -204,7 +203,7 @@ export default function Game(props){
                         userInfo={props.userInfo} 
                         health={health}
                         setHealthHandler={setHealthHandler}
-                        setEnemyListHandler={setEnemyListHandler}
+                        isDead={isDead}
                         damage={damage}/>
             <id id="player-utilities">
                 <button className="skill">Skill 1</button>

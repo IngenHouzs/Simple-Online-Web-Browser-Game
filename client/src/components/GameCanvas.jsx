@@ -23,6 +23,7 @@ export default function GameCanvas(props){
 
 
     const shootHandler = (e) => {
+        if (props.isDead) return;
         const targetX = e.clientX - canvasPositionX;
         const targetY = e.clientY - canvasPositionY;
         const posX = props.positionX;
@@ -92,6 +93,11 @@ export default function GameCanvas(props){
         }
         window.addEventListener('keypress', movementHandler);  
 
+        socket.on('player-death', data => {
+            if (data.username !== props.userInfo.username) return;
+            window.removeEventListener('keypress', movementHandler);
+        });
+
         const canvas = mapCanvasRef.current;
         const map = canvas.getContext('2d');
 
@@ -140,13 +146,14 @@ export default function GameCanvas(props){
                     } 
                     
                     const playerIsHit = playerBodyArea.find((position) => position[0] == bulletPosition[0] && position[1] == bulletPosition[1])
-                    // console.log(playerIsHit, shooter, 'mmh');
+
                     if (playerIsHit && shooter !== props.userInfo.username){
                         console.log("HITTT");
                         socket.emit('bullet-hit', props.roomInfo, shooter, props.userInfo, props.damage);
                         window.cancelAnimationFrame(bulletAnimate);
                         return;                        
                     } 
+
 
                     if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w' ||
                         bulletPosition[0] < 0 || bulletPosition[1] < 0 ||
@@ -204,11 +211,24 @@ export default function GameCanvas(props){
             health : props.health
         });
 
-        try{
-            socket.on('live-game-update', (data) => {  
-                props.setPlayersStatsHandler(data);
-                props.setEnemyListHandler(data);
+        try{ 
+            socket.on('update-player-stats', data => {
 
+                // props.setEnemyListHandler(data);
+                
+                // console.log("IINI GAME DATA", data);                
+                // console.log("beruba", props.enemyList);
+                
+            });
+            socket.on('live-game-update', (data) => {  
+                // props.setPlayersStatsHandler(data);
+                // const tempData = data;
+                // props.setEnemyListHandler(tempData);
+                // console.log(data[0].health, data[1].health);
+                // try{
+                // console.log(props.enemyList[0].health, props.enemyList[1].health, 'hehe')
+                // }catch(err){}
+                // console.log(data, 'hehehe');
                 map.drawImage(mapImage, 0, 0) //    
                 map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){

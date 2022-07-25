@@ -106,6 +106,7 @@ io.on('connection', socket => {
             const usersRoom = await findDatabaseName.collection(roomCollection).find({
                 roomName : roomInfo.roomName
             }).toArray();
+            console.log(usersRoom);
     
             io.to(roomInfo.roomName).emit('transfer-game-player-stats', usersRoom[0]);
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
@@ -160,11 +161,13 @@ io.on('connection', socket => {
 
     socket.on('bullet-hit', async (room, shooter, victimData, damage) => {
         try{
+            if (victimData.health <= 0) return;
             const currentData = await findDatabaseName.collection(roomCollection).find({
                 roomName : room.roomName
             }).toArray();
             const gameData = currentData[0].gameData;
             const findVictimData = gameData.find((user) => user.username === victimData.username);
+            
             if (findVictimData){
                 const findVictim = await findDatabaseName.collection(roomCollection).updateOne(
                     {roomName : room.roomName}, 
@@ -178,15 +181,38 @@ io.on('connection', socket => {
                             {'users.username' : victimData.username}
                         ]
                     }
-                );      
+                ); 
+                 
+                if (findVictimData.health - 10 <= 0){
+                    const findDeathPlayer = gameData.filter(player => player.username !== findVictimData.username);
+                    if (findDeathPlayer){
+                        const newData = await findDatabaseName.collection(roomCollection).updateOne(
+                            {roomName : room.roomName}, 
+                            {
+                                $set : {
+                                    gameData : [...findDeathPlayer]
+                                }
+                            }
+                        );
+                        io.to(room.roomName).emit('update-player-stats', newData);                        
+                    }
+                    
+                    // const findDeathPlayer = await findDatabaseName.collection(roomCollection).
+
+
+                    io.to(room.roomName).emit('player-death', victimData);
+                    return;
+                }
+
                 const newData = await findDatabaseName.collection(roomCollection).find({
                     roomName : room.roomName
                 }).toArray();
                 const newGameData = newData[0].gameData;            
-                console.log(shooter, 'shoots', victimData.username, newGameData);
+
                 io.to(room.roomName).emit('update-player-stats', newGameData);                      
+                // io.to(room.roomName).emit('announce-player-bullet-hit', newGameData);
             }     
-        }catch(err){}
+        }catch(err){console.error(err, 'heheheheh')}
     });
 
 
