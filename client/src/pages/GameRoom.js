@@ -35,6 +35,13 @@ export default function GameRoom(props){
         setStartGame(true);
     }
 
+    const returnToRoomLobbyHandler = () => {
+        setStartGame(false);
+        socket.emit('return-to-room-lobby', roomInfo);
+    };
+
+
+
 
     // socket.on('transfer-game-player-stats', data => {
     //     setGameData([...data.gameData]);
@@ -110,13 +117,19 @@ export default function GameRoom(props){
         //     setGameData([...data]);
         // })
 
+        socket.on('approve-return-lobby', () => {
+            setStartGame(false);
+            setCloseChat(false);
+            
+        })
+
         return () => playerLeavesRoomListener();
     },[]);
 
     return <div id="game-room">
         {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler}/> : null}
         {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
-        {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo}/> : null}
+        {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} returnToRoomLobbyHandler={returnToRoomLobbyHandler}/> : null}
         {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}
     </div>
 }

@@ -1130,6 +1130,31 @@ label.submenu-form-label, .horizontal-create-room-description{
   height:100%;
   width:93%;
   background-color: white;
+  position:relative;
+}
+
+.game-end{
+  position:absolute;
+  background-color: none;
+  text-align: center;
+  left:-3%;
+  z-index:8;
+}
+
+.player-dead{
+  top:40%;
+}
+
+.last-survivor{
+  top:48%;
+} 
+
+.return-button{
+  height:1.5rem;
+  width:10rem;
+  color:white;
+  background-color: #2e302e;
+  border:1px solid grey;
 }
 
 #player-utilities{
@@ -1199,6 +1224,13 @@ label.submenu-form-label, .horizontal-create-room-description{
   margin:0 !important;
 }
 
+
+.game-overlay{
+  height:100%;
+  width:100%;
+  position:absolute;
+  opacity: .5;
+}
 
 
 #player-utilities{

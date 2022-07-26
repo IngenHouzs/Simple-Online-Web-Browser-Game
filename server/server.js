@@ -167,6 +167,7 @@ io.on('connection', socket => {
             }).toArray();
             const gameData = currentData[0].gameData;
             const findVictimData = gameData.find((user) => user.username === victimData.username);
+            let lastHit = false;
             
             if (findVictimData){
                 const findVictim = await findDatabaseName.collection(roomCollection).updateOne(
@@ -184,6 +185,7 @@ io.on('connection', socket => {
                 ); 
                  
                 if (findVictimData.health - 10 <= 0){
+                    lastHit = true;
                     const findDeathPlayer = gameData.filter(player => player.username !== findVictimData.username);
                     if (findDeathPlayer){
                         const newData = await findDatabaseName.collection(roomCollection).updateOne(
@@ -200,7 +202,12 @@ io.on('connection', socket => {
                     // const findDeathPlayer = await findDatabaseName.collection(roomCollection).
 
 
-                    io.to(room.roomName).emit('player-death', victimData);
+                    io.to(room.roomName).emit('player-death', victimData, shooter, lastHit, damage, findDeathPlayer.length+1);
+
+                    if (findDeathPlayer.length <= 1){
+                        io.to(room.roomName).emit('end-game');
+                    }
+
                     return;
                 }
 
@@ -209,13 +216,39 @@ io.on('connection', socket => {
                 }).toArray();
                 const newGameData = newData[0].gameData;            
 
-                io.to(room.roomName).emit('update-player-stats', newGameData);                      
+                io.to(room.roomName).emit('update-player-stats', newGameData, victimData, shooter, lastHit, damage);                      
                 // io.to(room.roomName).emit('announce-player-bullet-hit', newGameData);
             }     
         }catch(err){console.error(err, 'heheheheh')}
     });
 
+    socket.on('return-to-room-lobby', async (roomInfo) => { 
+        const resetRoomGameStatus = await findDatabaseName.collection(roomCollection).updateOne(
+            {roomName : roomInfo.roomName}, 
+            {
+                $set : {
+                    gameData : null, 
+                    inGame : false
+                }
+            }
+        )
+        const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
+        io.emit('update-rooms-list-client', getUpdatedRooms);                
+        io.to(roomInfo.roomName).emit('approve-return-lobby');
+    });
 
+    socket.on('accumulate-player-point', async (user, value) => {
+        console.log(user.username, value);
+        const findUser = await findDatabaseName.collection(collectionName).updateOne(
+            {username : user.username}, 
+            {
+                $inc : {
+                    point : value
+                }
+            }
+        )
+        console.log(findUser);
+    });
 
     socket.on('live-server', async (room,bulletInfo) => {
         try{

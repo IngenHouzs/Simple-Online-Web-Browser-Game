@@ -4,6 +4,8 @@ import { useRef } from "react";
 import { socket } from "../ClientSocket";
 import "../index.css";
 
+import GameDeathOverlay from "../subcomponents/GameDeathOverlay";
+
 import Map from "../assets/game/map.png";
 import Player from "../assets/game/segi8.jpg";
 
@@ -45,6 +47,8 @@ export default function GameCanvas(props){
         }
         
         animate();
+
+    
 
         return () => {
             setEndAnimation(true);            
@@ -93,8 +97,17 @@ export default function GameCanvas(props){
         }
         window.addEventListener('keypress', movementHandler);  
 
-        socket.on('player-death', data => {
-            if (data.username !== props.userInfo.username) return;
+        socket.on('player-death', (data, shooter, lastHit, damage, ranking) => {
+            if (data.username !== props.userInfo.username){
+                if (props.userInfo.username === shooter){  
+                    console.log('mmmm', lastHit);
+                    if (lastHit) props.totalPointHandler(15);
+                    else props.totalPointHandler(Math.floor(damage/4));
+                    return;
+                }                    
+                return;
+            }  
+            props.rankHandler(ranking);
             window.removeEventListener('keypress', movementHandler);
         });
 
@@ -194,14 +207,15 @@ export default function GameCanvas(props){
         
 
       
-        mapImage.onload = () => {
+        mapImage.onload = () => { 
+            if (props.isDead) return;
             map.drawImage(mapImage, 0,0);               
             map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);    
             // map.drawImage(playerImage, -6, -6, 12, 12);                       
         }
     
 
-        socket.emit('change-player-stats', props.userInfo, props.roomInfo, {
+        if (!props.isDead) socket.emit('change-player-stats', props.userInfo, props.roomInfo, {
             positionX : props.positionX,
             positionY : props.positionY,
             playerCoordinate : {
@@ -212,8 +226,13 @@ export default function GameCanvas(props){
         });
 
         try{ 
-            socket.on('update-player-stats', data => {
-
+            socket.on('update-player-stats', (data, victimData, shooter, lastHit, damage) => {
+                if (props.userInfo.username === shooter){  
+                    console.log('mmmm', lastHit);
+                    if (lastHit) props.totalPointHandler(30);
+                    else props.totalPointHandler(Math.floor(damage/2));
+                    return;
+                }    
                 // props.setEnemyListHandler(data);
                 
                 // console.log("IINI GAME DATA", data);                
@@ -241,9 +260,10 @@ export default function GameCanvas(props){
             });                 
         } catch(err){}
        
-
-        map.drawImage(mapImage, 0,0);           
-        map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);   
+        if (!props.isDead){
+            map.drawImage(mapImage, 0,0);           
+            map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);   
+        }
         // map.drawImage(playerImage, -6, -6, 12, 12);              
 
         
@@ -256,6 +276,36 @@ export default function GameCanvas(props){
     },[props.positionX, props.positionY, refresher]);
 
     return <div id="game-canvas" ref={mapCanvasWrapperRef}>
+        {props.isDead || props.endGame ? <GameDeathOverlay/> : null}
+        {props.isDead ? 
+            <div className="game-end player-dead">              
+                <h1 style={
+                    {
+                        color : 'red', 
+                        textShadow : '0px 0px 3px black'
+                    }
+                }>You were killed.</h1>
+            </div>
+        : 
+            props.endGame ?
+            <div className="game-end player-dead">              
+                <h1 style={
+                    {
+                        color : '#31d622', 
+                        textShadow : '0px 0px 3px black'                        
+                    }
+                }>You are the last survivor!</h1>
+            </div>        
+            : null
+        }
+        {
+            props.endGame ? 
+            <div className="game-end last-survivor"> 
+                <h1>Point gained : {props.totalPoint}</h1> 
+                {props.roomInfo.host === props.userInfo.username ? <button onClick={props.returnToRoomLobbyHandler} className="return-button">RETURN</button> : null}               
+            </div>
+            : null
+        }
         <canvas id="map-canvas" ref={mapCanvasRef} width={1181} height={632} onClick={shootHandler}>
             <img src={Map} alt="#"/>
         </canvas>

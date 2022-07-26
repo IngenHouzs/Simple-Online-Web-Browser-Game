@@ -12,6 +12,7 @@ import '../index.css';
 
 function PlayerCard(properties){
 
+
     const ref = useRef();
 
     useEffect(() => {
@@ -43,8 +44,12 @@ export default function Game(props){
     const [positionX, setPositionX] = useState(0);
     const [positionY, setPositionY] = useState(0);
     const [enemyList, setEnemyList] = useState(props.gameData);
+    const [rank, setRank] = useState(-1);
 
     const [isDead, setIsDead] = useState(false);
+
+    const [totalPoint, setTotalPoint] = useState(0);
+    const [endGame, setEndGame] = useState(false);
 
     // const [playersStats, setPlayersStats] = useState(props.gameData);
 
@@ -71,8 +76,12 @@ export default function Game(props){
     const [playerCoordinate, setPlayerCoordinate] = useState({x : 0, y : 0});
 
     const setHealthHandler = (HP) => setHealth(HP);
+    const totalPointHandler = (value) => {  
+        if (endGame) return;
+        setTotalPoint(totalPoint => totalPoint + value);
+    }
+    const rankHandler = (value) => setRank(value);
 
-    
     useEffect(() => {   
         // setEnemyList(props.gameData);
         console.log("WKKWKWKWKKWKWKKWKKWKWKWKKWKW");
@@ -146,7 +155,12 @@ export default function Game(props){
 
         // });      
         
-          
+          socket.on('end-game', () => {
+            setEndGame(true); 
+            socket.emit('accumulate-player-point', props.userInfo, totalPoint);            
+          });
+
+          setInterval(() => console.log('meee pooint', totalPoint), 3000);
                          
     }, []);
 
@@ -154,10 +168,9 @@ export default function Game(props){
 
 
     useEffect(() => { 
-
-        
         // setPlayersStats(props.roomInfo.gameData);
-    },[props.roomInfo])
+        console.log(totalPoint, 'mwmw')
+    },[totalPoint])
 
 
     return <div id="game">
@@ -203,8 +216,15 @@ export default function Game(props){
                         userInfo={props.userInfo} 
                         health={health}
                         setHealthHandler={setHealthHandler}
+                        totalPoint={totalPoint}
+                        totalPointHandler={totalPointHandler}
                         isDead={isDead}
-                        damage={damage}/>
+                        endGame={endGame}
+                        rank={rank}
+                        rankHandler={rankHandler}
+                        damage={damage}
+                        returnToRoomLobbyHandler={props.returnToRoomLobbyHandler}
+                        />
             <id id="player-utilities">
                 <button className="skill">Skill 1</button>
                 <button className="skill">Skill 2</button>
