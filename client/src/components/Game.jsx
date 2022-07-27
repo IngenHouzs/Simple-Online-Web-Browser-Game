@@ -86,8 +86,7 @@ export default function Game(props){
     useEffect(() => { 
         // setPlayersStats(props.roomInfo.gameData);
         pointRef.current = totalPoint;
-        console.log(pointRef.current, 'curr')
-        console.log(totalPoint);
+
  
         
     },[totalPoint])
@@ -145,7 +144,6 @@ export default function Game(props){
         socket.on('player-death', user => {
             if (user.username !== props.userInfo.username) return;
             setIsDead(true);
-            console.log('u deeeed');
         });
 
         ref.current.style.setProperty('width', `100%`, 'important');
@@ -170,10 +168,12 @@ export default function Game(props){
         socket.on('end-game', (shooter) => {
             setEndGame(true); 
             console.log(pointRef.current, ' mgmgmg')
-            // pointRef.current = totalPoint;
             console.log(pointRef.current, 'neeew');
             if (props.userInfo.username === shooter) postPlayerPoint(pointRef.current + 30); // 30 is for last survivor bonus
             else postPlayerPoint(pointRef.current);
+
+            
+
           });        
 
           return () => {

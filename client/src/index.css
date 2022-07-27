@@ -265,6 +265,8 @@ h1, a{
   height:80px;
   width:80px;
   background-color: orange;  
+  border-radius: 50%;
+  position:relative;
 }
 
 .friend-list{
@@ -602,14 +604,86 @@ h1, a{
   color:white;
 }
 
+
+.leaderboard-exit-button{
+  height:1.5rem;
+  width:1.5rem;
+  position: absolute;
+  right:.5rem;
+}
+
+.leaderboard-div{
+  padding-left:1rem;
+  padding-right: 1rem;
+  overflow-y: scroll;
+}
+
 .endpoint-create-room input[type=submit]{
   background-color: green;
   color:white;
+} 
+
+.leaderboard-badge p{
+  position:absolute;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;  
+  color:red;
+}
+
+
+
+.leaderboard-badge p:first-child{
+  font-size:2.5rem;
+  top:-30px;
+  left:28px;
+  right:auto;
+  /* background-color: red; */
+}
+
+.leaderboard-badge p:nth-child(2){
+  left:-2px;
+  top:40px;
+}
+
+.toppers-list{
+  width:100%;
+  height:auto;
+  display:flex;
+  flex-direction: column;
+  gap:0rem;
+  overflow-x: hidden;
+}
+
+.leaderboard-card{
+  width:100%;
+  height:80px;
+  display:flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left:1rem;
+  margin-bottom:1px solid black !important;
+  position:relative; 
+}
+
+.leaderboard-point-div{
+  height:100%;
+  width:7rem;
+  justify-self:flex-end;
+  position: absolute;
+  right:0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.leaderboard-point-div p{
+  margin:0;
 }
 
 .endpoint-create-room{
   align-self: flex-end;
-  gap:1rem;
+  gap:1rem; 
 }
 
 .create-room-card form{

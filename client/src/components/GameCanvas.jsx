@@ -100,7 +100,6 @@ export default function GameCanvas(props){
         socket.on('player-death', (data, shooter, lastHit, damage, ranking) => {
             if (data.username !== props.userInfo.username){
                 if (props.userInfo.username === shooter){  
-                    console.log('mmmm', lastHit);
                     if (lastHit) props.totalPointHandler(15);
                     else props.totalPointHandler(Math.floor(damage/4));
                     return;
@@ -161,7 +160,6 @@ export default function GameCanvas(props){
                     const playerIsHit = playerBodyArea.find((position) => position[0] == bulletPosition[0] && position[1] == bulletPosition[1])
 
                     if (playerIsHit && shooter !== props.userInfo.username){
-                        console.log("HITTT");
                         socket.emit('bullet-hit', props.roomInfo, shooter, props.userInfo, props.damage);
                         window.cancelAnimationFrame(bulletAnimate);
                         return;                        
@@ -228,7 +226,7 @@ export default function GameCanvas(props){
         try{ 
             socket.on('update-player-stats', (data, victimData, shooter, lastHit, damage) => {
                 if (props.userInfo.username === shooter){  
-                    // console.log('mmmm', damage/2);
+
                     if (lastHit) props.totalPointHandler(30);
                     else props.totalPointHandler(Math.floor(damage/2));
                     return;

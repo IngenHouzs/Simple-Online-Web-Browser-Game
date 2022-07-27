@@ -193,7 +193,7 @@ io.on('connection', socket => {
                             {
                                 $set : {
                                     gameData : [...findDeathPlayer]
-                                }
+                             }
                             }
                         );
                         io.to(room.roomName).emit('update-player-stats', newData);                        
@@ -205,7 +205,8 @@ io.on('connection', socket => {
                     io.to(room.roomName).emit('player-death', victimData, shooter, lastHit, damage, findDeathPlayer.length+1);
 
                     if (findDeathPlayer.length <= 1){
-                        io.to(room.roomName).emit('end-game', shooter);
+                        io.to(room.roomName).emit('end-game', shooter); 
+       
                     }
 
                     return;
@@ -222,6 +223,13 @@ io.on('connection', socket => {
         }catch(err){console.error(err, 'heheheheh')}
     });
 
+    socket.on('request-profile-data', async userInfo => {
+        try{
+            const refreshPlayerData = await findDatabaseName.collection(collectionName).find().toArray();
+            io.emit('refresh-player-profile', refreshPlayerData);
+        }catch(err){}        
+    });
+
     socket.on('return-to-room-lobby', async (roomInfo) => { 
         const resetRoomGameStatus = await findDatabaseName.collection(roomCollection).updateOne(
             {roomName : roomInfo.roomName}, 
@@ -235,6 +243,12 @@ io.on('connection', socket => {
         const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
         io.emit('update-rooms-list-client', getUpdatedRooms);                
         io.to(roomInfo.roomName).emit('approve-return-lobby');
+    });
+
+    socket.on('request-leaderboard-data', async () => {
+        const getPlayers = await findDatabaseName.collection(collectionName).find().sort({point:-1}).toArray();
+        console.log('ejejejeje', getPlayers);
+        io.emit('receive-leaderboard-data', getPlayers);
     });
 
     socket.on('accumulate-player-point', async (user, value) => {

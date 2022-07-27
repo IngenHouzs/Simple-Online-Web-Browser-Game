@@ -23,7 +23,7 @@ export default function Application(props){
     const q = query.get('roomId');
 
     const navigate = useNavigate();
-    const userInfo = location.state.data;    
+    const usersInfo = location.state.data;    
 
     const [onlinePlayers, setOnlinePlayers] = useState(0);
     const [openCreateRoom, setOpenCreateRoom] = useState(false);
@@ -32,6 +32,11 @@ export default function Application(props){
     const [targetRoom, setTargetRoom] = useState(null);
     const [correctRoomPassword, setCorrectRoomPassword] = useState(false);
     const [rooms, setRooms] = useState([]);
+    const [userInfo, setUserInfo] = useState(usersInfo);
+
+    const [playerList, setPlayerList] = useState([]);
+ 
+
     
     const updateOpenCreateRoom = () => setOpenCreateRoom(!openCreateRoom);
     const updateOpenLeaderboard = () => setOpenLeaderboard(!openLeaderboard);
@@ -64,6 +69,23 @@ export default function Application(props){
             .catch(err => console.error(err));
     
         setRooms([]);    
+
+        socket.on('refresh-player-profile', playersData => {
+            const findUser = playersData.find(user => user.username === userInfo.username);
+            setUserInfo(findUser);
+        }); 
+
+        socket.emit('request-leaderboard-data');
+        socket.on('receive-leaderboard-data', data => {
+            setPlayerList(data);
+        });        
+
+        socket.emit('request-profile-data', userInfo);
+
+        return () => {
+            socket.off('refresh-player-profile');
+            socket.off('receive-leaderboard-data');            
+        }
     },[]);
 
     return <div id="app">
@@ -71,7 +93,7 @@ export default function Application(props){
                                       userInfo={userInfo} 
                                       rooms={rooms} 
                                       addNewRoomToClient={addNewRoomToClient}/> :
-         (openLeaderboard ? <Leaderboard updateOpenLeaderboard={updateOpenLeaderboard}/> : null)}
+         (openLeaderboard ? <Leaderboard updateOpenLeaderboard={updateOpenLeaderboard} userInfo={userInfo} playerList={playerList}/> : null)}
         {openCreateRoom || openLeaderboard || openPasswordInput ? <Overlay/> : null}    
 
         
@@ -82,7 +104,7 @@ export default function Application(props){
                                            userInfo={userInfo}
                                            /> : null}
 
-        <Profile userInfo={userInfo}/>                                                                                           
+        <Profile userInfo={userInfo} playerList={playerList}/>                                                                                           
         <div id="main-dashboard">
             <DashboardNav 
                 userInfo={userInfo} 
