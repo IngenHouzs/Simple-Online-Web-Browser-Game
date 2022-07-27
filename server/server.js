@@ -238,7 +238,7 @@ io.on('connection', socket => {
     });
 
     socket.on('accumulate-player-point', async (user, value) => {
-        console.log(user.username, value);
+
         const findUser = await findDatabaseName.collection(collectionName).updateOne(
             {username : user.username}, 
             {
@@ -247,7 +247,7 @@ io.on('connection', socket => {
                 }
             }
         )
-        console.log(findUser);
+        console.log("mhmhmhmmh", user.username, value);
     });
 
     socket.on('live-server', async (room,bulletInfo) => {

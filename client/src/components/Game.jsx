@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRef } from "react";
 import { socket } from "../ClientSocket";
 
@@ -80,7 +80,11 @@ export default function Game(props){
         if (endGame) return;
         setTotalPoint(totalPoint => totalPoint + value);
     }
-    const rankHandler = (value) => setRank(value);
+    const rankHandler = (value) => setRank(value); 
+
+    const getPoints = () => {
+        return totalPoint;
+    }
 
     useEffect(() => {   
         // setEnemyList(props.gameData);
@@ -154,19 +158,17 @@ export default function Game(props){
         //     setEnemyListHandler(data.gameData);
 
         // });      
+        const postPlayerPoint = (num) => socket.emit('accumulate-player-point', props.userInfo, num);        
         
-          socket.on('end-game', () => {
+        socket.on('end-game', () => {
             setEndGame(true); 
-            socket.emit('accumulate-player-point', props.userInfo, totalPoint);            
-          });
-
-          setInterval(() => console.log('meee pooint', totalPoint), 3000);
+            postPlayerPoint(totalPoint); 
+          });        
                          
     }, []);
 
 
-
-
+   
     useEffect(() => { 
         // setPlayersStats(props.roomInfo.gameData);
         console.log(totalPoint, 'mwmw')
