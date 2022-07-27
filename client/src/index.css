@@ -251,6 +251,10 @@ h1, a{
   flex-direction: column;
 }
 
+.profile-leaderboard{
+  position: relative;
+}
+
 .profile-rank h1{
   font-size:.9rem !important;
 }
@@ -258,13 +262,16 @@ h1, a{
 .rank-badge{
   height:50px;
   width:50px;
-  background-color: orange;
+}
+
+.leaderboard-player-badge{
+  height:3rem !important;
+  width:3rem !important;
 }
 
 .leaderboard-badge{
   height:80px;
-  width:80px;
-  background-color: orange;  
+  width:80px;  
   border-radius: 50%;
   position:relative;
 }
@@ -623,25 +630,27 @@ h1, a{
   color:white;
 } 
 
-.leaderboard-badge p{
+.profile-leaderboard p{
   position:absolute;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;  
   color:red;
+  text-shadow: 1px 1px 3px yellow;
+  font-weight: bold;
 }
 
 
 
-.leaderboard-badge p:first-child{
-  font-size:2.5rem;
-  top:-30px;
-  left:28px;
+.profile-leaderboard p:nth-child(2){
+  font-size:4rem;
+  top:-50px;
+  left:26px;
   right:auto;
   /* background-color: red; */
 }
 
-.leaderboard-badge p:nth-child(2){
-  left:-2px;
-  top:40px;
+.profile-leaderboard p:nth-child(3){
+  left:4px;
+  top:65px;
 }
 
 .toppers-list{
@@ -926,6 +935,11 @@ label.submenu-form-label, .horizontal-create-room-description{
   background-color: aqua;
   width:80%;
   height:45%;
+}
+
+.game-map img{
+  height:100%;
+  width:100%;
 }
 
 .room-player-list{

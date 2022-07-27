@@ -1,4 +1,11 @@
 import React from "react";
+import Bronze from "../assets/badge/bronze.png";
+import Silver from "../assets/badge/silver.png";
+import Gold from "../assets/badge/gold.png";
+import Crystal from "../assets/badge/crystal.png";
+import Platinum from "../assets/badge/platinum.png";
+import Conqueror from "../assets/badge/conqueror.png";
+import RankBadge from "../assets/badge/globalrank.png";
 
 export default function Profile(props){
 
@@ -20,8 +27,16 @@ export default function Profile(props){
         else if (point > 5000 && point <= 5800) return 'Platinum II';        
         else if (point > 5800 && point <= 6400) return 'Platinum I';        
         else if (point > 6400) return 'Conqueror';              
+    } 
 
-
+    const playerBadge = () => {
+        const point = props.userInfo.point;
+        if (point <= 600) return Bronze;
+        else if (point > 600 && point <= 1500) return Silver;                         
+        else if (point > 1500 && point <= 2700) return Gold;                       
+        else if (point > 2700 && point <= 4200) return Crystal;                
+        else if (point > 4200 && point <= 6400) return Platinum;               
+        else if (point > 6400) return Conqueror;         
     }
 
     const findUserOnLeaderboard = () => {
@@ -47,22 +62,25 @@ export default function Profile(props){
         </div> 
         <div className="profile-achievement">
             <div className="profile-rank">
-                <div className="rank-badge"></div>
+                <img className="rank-badge" src={playerBadge()} alt="#"/>
                 <h1>{playerRank()}</h1>
             </div>
-            <div className="profile-leaderboard">
-                <div className="leaderboard-badge">
+            {Number(findUserOnLeaderboard() + Number(1)) <= 10 ? 
+                <div className="profile-leaderboard">
+                    <img className="leaderboard-badge" src={RankBadge} alt="#"/>
                     <p>
-                        {Number(findUserOnLeaderboard() + Number(1))}
-                    </p>
-                    <p>Global Rank</p>
-                </div>
-            </div>
+                            {Number(findUserOnLeaderboard() + Number(1))}
+                        </p>
+                    <p>Global Rank</p>                
+                </div>        
+                : null 
+            }
+
         </div> 
-        <button className="friend-list">
+        {/* <button className="friend-list">
             <div className="friend-icon"></div>                        
             <h1>Friend List</h1>
-        </button>  
+        </button>   */}
         <a className="log-out">LOG OUT</a> 
     </div>
 } 

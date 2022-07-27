@@ -18,6 +18,8 @@ export default function GameCanvas(props){
     const [refresher, setRefresher] = useState(false);
     const [gridIsSet, setGridIsSet] = useState(false);
 
+    const [mapsList, setMapsList] = useState([Map]);
+
 
     const [canvasPositionX, setCanvasPositionX] = useState(0);
     const [canvasPositionY, setCanvasPositionY] = useState(0);
@@ -116,16 +118,8 @@ export default function GameCanvas(props){
         const mapImage = new Image();
         const playerImage = new Image();        
 
-        let chosenMap;
-        if (props.mapNumber === 0){
-            chosenMap = Map;
-        } else if (props.mapNumber === 1){
-            chosenMap = Map;
-        } else if (props.mapNumber === 2){
-            chosenMap = Map;
-        }        
 
-        mapImage.src = chosenMap;
+        mapImage.src = mapsList[props.mapNumber];
         playerImage.src = Player; 
         
 

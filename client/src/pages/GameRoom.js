@@ -7,6 +7,9 @@ import { webserver } from "../ServerConfig";
 import GameChat from "../components/GameChat";
 import GamePage from "../components/GamePage";
 import Game from "../components/Game";
+
+import KingdomCastle from "../assets/game/map.png";
+
 import "../index.css";
 
 
@@ -22,11 +25,12 @@ export default function GameRoom(props){
 
     const [gameData, setGameData] = useState(false);
 
-    const [mapList, setMapList] = useState(null);
+    const [mapList, setMapList] = useState([KingdomCastle]);
     const [map, setMap] = useState(0);
 
 
-
+    const setMapLeft = () => setMap(map => (map - 1) % mapList.length);
+    const setMapRight = () => setMap(map => (map + 1) % mapList.length);    
 
     const setStartGameHandler = async () => {
         if (roomInfo.host !== userInfo.username || roomInfo.playerList.length <= 1) return;
@@ -127,7 +131,7 @@ export default function GameRoom(props){
     },[]);
 
     return <div id="game-room">
-        {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler}/> : null}
+        {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} map={map} mapList={mapList}/> : null}
         {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
         {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} returnToRoomLobbyHandler={returnToRoomLobbyHandler}/> : null}
         {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}

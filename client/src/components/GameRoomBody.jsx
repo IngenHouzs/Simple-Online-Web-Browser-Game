@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import {socket} from "../ClientSocket";
+import {socket} from "../ClientSocket"; 
+import KingdomCastle from "../assets/game/map.png"
 
 import "../index.css";
 
@@ -30,10 +31,16 @@ function PlayerCard(properties){
 
 export default function GameRoomBody(props){
 
+    const [maps, setMaps] = useState([KingdomCastle]); // map image disini
+
+    const renderMapImage = () => {
+        return maps[props.map];
+    }
+
     return <div id="game-room-body">
         <h1>Choose Map</h1>
         <div className="game-map">
-
+            <img src={renderMapImage()} alt="#"/>
         </div>
         <div className="room-player-list">
             {props.roomInfo.playerList.map((player) => 
