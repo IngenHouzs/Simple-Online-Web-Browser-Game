@@ -36,11 +36,13 @@ export default function GameRoomBody(props){
     const renderMapImage = () => {
         return maps[props.map];
     }
-
+    // map length is taken from GameRoom
     return <div id="game-room-body">
         <h1>Choose Map</h1>
         <div className="game-map">
+            <button className="map-carousel-left" onClick={props.setMapLeft}>&lt;</button> 
             <img src={renderMapImage()} alt="#"/>
+            <button className="map-carousel-right" onClick={props.setMapRight}>&gt;</button>
         </div>
         <div className="room-player-list">
             {props.roomInfo.playerList.map((player) => 

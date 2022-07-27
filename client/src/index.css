@@ -935,6 +935,28 @@ label.submenu-form-label, .horizontal-create-room-description{
   background-color: aqua;
   width:80%;
   height:45%;
+  position:relative;
+}
+
+.game-map button{
+  position:absolute;
+  height:3rem;
+  width:3rem;
+  font-size:2rem;
+  font-weight: bold;
+  background-color: none;
+  background: none;
+  border:none;
+  border-radius:50%;
+  top:45%;
+}
+
+.game-map button:hover{
+  background-color: white;
+}
+
+.map-carousel-right{
+  right:0px;
 }
 
 .game-map img{
