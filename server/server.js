@@ -205,7 +205,7 @@ io.on('connection', socket => {
                     io.to(room.roomName).emit('player-death', victimData, shooter, lastHit, damage, findDeathPlayer.length+1);
 
                     if (findDeathPlayer.length <= 1){
-                        io.to(room.roomName).emit('end-game');
+                        io.to(room.roomName).emit('end-game', shooter);
                     }
 
                     return;

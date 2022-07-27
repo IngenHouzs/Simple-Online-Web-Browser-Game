@@ -38,6 +38,7 @@ export default function Game(props){
 
     const ref = useRef();    
 
+
     const [playerIndex, setPlayerIndex] = useState(-1);
 
     const [health, setHealth] = useState(100);
@@ -58,7 +59,7 @@ export default function Game(props){
 
     const [damage, setDamage] = useState(10);
 
-    
+    const pointRef = useRef(totalPoint);
     
     const [boundaryGrid, setBoundaryGrid] = useState(() => {
         let grid = [];
@@ -82,11 +83,17 @@ export default function Game(props){
     }
     const rankHandler = (value) => setRank(value); 
 
-    const getPoints = () => {
-        return totalPoint;
-    }
+    useEffect(() => { 
+        // setPlayersStats(props.roomInfo.gameData);
+        pointRef.current = totalPoint;
+        console.log(pointRef.current, 'curr')
+        console.log(totalPoint);
+ 
+        
+    },[totalPoint])
 
     useEffect(() => {   
+        setTotalPoint(0);
         // setEnemyList(props.gameData);
         console.log("WKKWKWKWKKWKWKKWKKWKWKWKKWKW");
         props.setCloseChatToTrue(); 
@@ -160,19 +167,24 @@ export default function Game(props){
         // });      
         const postPlayerPoint = (num) => socket.emit('accumulate-player-point', props.userInfo, num);        
         
-        socket.on('end-game', () => {
+        socket.on('end-game', (shooter) => {
             setEndGame(true); 
-            postPlayerPoint(totalPoint); 
+            console.log(pointRef.current, ' mgmgmg')
+            // pointRef.current = totalPoint;
+            console.log(pointRef.current, 'neeew');
+            if (props.userInfo.username === shooter) postPlayerPoint(pointRef.current + 30); // 30 is for last survivor bonus
+            else postPlayerPoint(pointRef.current);
           });        
+
+          return () => {
+            socket.off('end-game');
+          }
                          
     }, []);
 
 
    
-    useEffect(() => { 
-        // setPlayersStats(props.roomInfo.gameData);
-        console.log(totalPoint, 'mwmw')
-    },[totalPoint])
+
 
 
     return <div id="game">

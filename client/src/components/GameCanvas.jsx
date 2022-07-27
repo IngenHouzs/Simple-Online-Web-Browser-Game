@@ -228,7 +228,7 @@ export default function GameCanvas(props){
         try{ 
             socket.on('update-player-stats', (data, victimData, shooter, lastHit, damage) => {
                 if (props.userInfo.username === shooter){  
-                    console.log('mmmm', lastHit);
+                    // console.log('mmmm', damage/2);
                     if (lastHit) props.totalPointHandler(30);
                     else props.totalPointHandler(Math.floor(damage/2));
                     return;
@@ -270,9 +270,12 @@ export default function GameCanvas(props){
 
         return () =>  {
             window.removeEventListener('keypress', movementHandler);  
-
+            socket.off('update-player-stats');
+            socket.off('live-game-update');
+            socket.off('create-projectile');
         }
         
+
     },[props.positionX, props.positionY, refresher]);
 
     return <div id="game-canvas" ref={mapCanvasWrapperRef}>
