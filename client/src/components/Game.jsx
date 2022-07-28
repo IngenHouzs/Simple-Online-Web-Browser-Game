@@ -33,6 +33,13 @@ function PlayerCard(properties){
     </div>
 }
 
+function SkillButton(properties){
+    const skillObject = properties.skill;
+    return <button className="skill">
+        <img src={skillObject.logo} alt="#" onClick={() => properties.decrementMana(skillObject.manaUsage, skillObject.id)}/>
+    </button>       
+}
+
 
 export default function Game(props){
 
@@ -50,8 +57,10 @@ export default function Game(props){
     const [isDead, setIsDead] = useState(false);
 
     const [totalPoint, setTotalPoint] = useState(0);
-    const [endGame, setEndGame] = useState(false);
+    const [endGame, setEndGame] = useState(false);  
 
+    const [mana, setMana] = useState(0);    
+    
     // const [playersStats, setPlayersStats] = useState(props.gameData);
 
     const [row, setRow] = useState(1180);
@@ -59,7 +68,18 @@ export default function Game(props){
 
     const [damage, setDamage] = useState(10);
 
+
+    const [activeSkill, setActiveSkill] = useState(null); // value nanti 0 or 1 (sesuai index skill di array USER)
+
     const pointRef = useRef(totalPoint);
+
+    const decrementMana = (weight, id) => {
+        if (mana < weight) return;
+        console.log("USED SKILL");
+        setMana(mana => mana - weight); 
+        if (mana < 0) setMana(0);
+        setActiveSkill(id);
+    }
     
     const [boundaryGrid, setBoundaryGrid] = useState(() => {
         let grid = [];
@@ -72,7 +92,9 @@ export default function Game(props){
     const setPositionLeft = () => setPositionX((positionX) => positionX - 2);
     const setPositionRight = () => setPositionX((positionX) => positionX + 2);
     const setPositionDown = () =>  setPositionY((positionY) => positionY + 2);
-    const setPositionUp = () =>   setPositionY((positionY) => positionY - 2);     
+    const setPositionUp = () =>   setPositionY((positionY) => positionY - 2);    
+    
+    const setActiveSkillToEmpty = () => setActiveSkill(null);
 
     const [playerCoordinate, setPlayerCoordinate] = useState({x : 0, y : 0});
 
@@ -176,12 +198,25 @@ export default function Game(props){
 
           });        
 
-          return () => {
+        return () => {
             socket.off('end-game');
-          }
+        }
                          
     }, []);
 
+    useEffect(() => {
+        const manaRegeneration = setInterval(() => {
+            if (mana > 100){
+                setMana(100);
+                return;
+            } 
+            console.log(mana, 'mymana');
+            setMana(mana => mana + 10);
+        }, 2000);
+
+        return () => clearInterval(manaRegeneration);
+    }
+    , [mana])
 
    
 
@@ -238,10 +273,14 @@ export default function Game(props){
                         rankHandler={rankHandler}
                         damage={damage}
                         returnToRoomLobbyHandler={props.returnToRoomLobbyHandler}
+                        decrementMana={decrementMana}
+                        activeSkill={activeSkill}
+                        skills={props.skills}
+                        skillList={props.skillList}
+                        setActiveSkillToEmpty={setActiveSkillToEmpty}
                         />
             <id id="player-utilities">
-                <button className="skill">Skill 1</button>
-                <button className="skill">Skill 2</button>
+                {props.skillSet.map((skillIndex) => <SkillButton skill={props.skills[skillIndex]} decrementMana={decrementMana} index={skillIndex}/>)} 
             </id>
         </div>
 

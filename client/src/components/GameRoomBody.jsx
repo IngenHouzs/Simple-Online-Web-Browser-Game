@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import {socket} from "../ClientSocket"; 
-import KingdomCastle from "../assets/game/map.png"
+import KingdomCastle from "../assets/game/map.png";
 
 import "../index.css";
 

@@ -75,6 +75,18 @@ io.on('connection', socket => {
         io.to(room.roomName).emit('create-projectile',target, position, shooter);
     });
 
+    socket.on('host-changed-map', (roomInfo, direction) => {
+        socket.to(roomInfo.roomName).emit('announce-map-changes', roomInfo, direction);
+    });
+    
+    socket.on('skill-0', (shooterObject, room, id, target) => {
+        io.to(room.roomName).emit('launch-skill-0', shooterObject, id, target);
+    });
+
+    // socket.on('initialize-skill', (shooterObject, room, id) => {
+    //     io.to(room.roomName).emit('skill-ready', shooterObject, id);
+    // });
+
     socket.on('host-start-game', async (roomInfo, callback) => {
         try{
             const databasePromise = database();

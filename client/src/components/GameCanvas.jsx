@@ -32,6 +32,22 @@ export default function GameCanvas(props){
         const targetY = e.clientY - canvasPositionY;
         const posX = props.positionX;
         const posY = props.positionY; 
+
+        // disini tentuin skillnya 
+        console.log('as', props.activeSkill);
+        if (props.activeSkill !== null){
+
+            // meteor
+            if (props.activeSkill === 0){
+                socket.emit('skill-0', props.userInfo, props.roomInfo, 0, {targetX, targetY});
+            } 
+            // boundless bullet
+            else if (props.activeSkill === 1){
+                // socket.emit('skill-2', props.userInfo, 1);
+            }
+            return;
+        }
+
         socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo);
     }
 
@@ -50,7 +66,7 @@ export default function GameCanvas(props){
         
         animate();
 
-    
+
 
         return () => {
             setEndAnimation(true);            
@@ -196,6 +212,48 @@ export default function GameCanvas(props){
         });        
     
 
+        socket.on('launch-skill-0', (shooterObject, ID, target)=> {
+            const animationDuration = 30; //fps
+            console.log('launched');
+            const renderSkill = () => {
+                if (props.isDead) return;
+                const skillDelay = setTimeout(() => {
+                    const {targetX, targetY} = target;                    
+                    console.log('CASTSTTTSTSTST');
+                    const offsetX = Math.floor(targetX/2) - Math.floor(props.skills[ID].radius/2); 
+                    const offsetY = Math.floor(targetY/2) - Math.floor(props.skills[ID].radius/2);
+                    
+                    const impactArea = [];
+                    for (let h = offsetX; h < offsetX + props.skills[ID].radius; h++){
+                        for (let v = offsetY; v < offsetY + props.skills[ID].radius; v++){
+                            impactArea.push([h,v]);
+                        }
+                    }             
+                    
+                    // check if anyone hit
+                    
+                    map.fillStyle = 'red';
+                    let animationCounter = 0
+                    const nukeAnimate = () => {
+                        map.fillRect(offsetX, offsetY, props.skills[ID].radius, props.skills[ID].radius);
+                        animationCounter++;
+                        if (animationCounter >= animationDuration) {
+                            window.cancelAnimationFrame(nukeAnimate);
+                            props.setActiveSkillToEmpty();
+                            return;
+                        }
+                        window.requestAnimationFrame(nukeAnimate);
+                    }
+
+                    nukeAnimate();
+
+
+                }, props.skills[ID].delay);
+            }
+
+            renderSkill();
+        });
+
         
 
       
@@ -258,13 +316,12 @@ export default function GameCanvas(props){
         }
         // map.drawImage(playerImage, -6, -6, 12, 12);              
 
-        
-
         return () =>  {
             window.removeEventListener('keypress', movementHandler);  
             socket.off('update-player-stats');
             socket.off('live-game-update');
             socket.off('create-projectile');
+            socket.off('skill-ready');
         }
         
 

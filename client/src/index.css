@@ -949,6 +949,15 @@ label.submenu-form-label, .horizontal-create-room-description{
   border:none;
   border-radius:50%;
   top:45%;
+} 
+
+.skill{
+  z-index:7;
+}
+
+.skill img{
+  height:100%;
+  width:100%;
 }
 
 .game-map button:hover{

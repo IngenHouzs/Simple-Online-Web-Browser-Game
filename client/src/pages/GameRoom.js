@@ -9,6 +9,8 @@ import GamePage from "../components/GamePage";
 import Game from "../components/Game";
 
 import KingdomCastle from "../assets/game/map.png";
+import Meteor from "../assets/game/meteor.png";
+import BoundlessBullet from "../assets/game/boundless-bullet.png";
 
 import "../index.css";
 
@@ -26,11 +28,42 @@ export default function GameRoom(props){
     const [gameData, setGameData] = useState(false);
 
     const [mapList, setMapList] = useState([KingdomCastle]);
-    const [map, setMap] = useState(0);
+    const [map, setMap] = useState(0); 
 
+    const [skillSet, setSkillSet] = useState([0,1]); 
+    const [skills,setSkills] = useState(
+        [
+            {
+                id : 0, 
+                name : "Meteor", 
+                manaUsage : 80,
+                radius : 8,
+                count : 1,
+                logo : Meteor,
+                delay : 2000
+            }, 
+            {
+                id : 1,
+                name : "Boundless Bullet", 
+                manaUsage : 60,
+                radius : 0,
+                count : 5, 
+                logo : BoundlessBullet,
+                delay : 0,
+            }
+        ]
+    );
 
-    const setMapLeft = () => setMap(map => (map - 1) % mapList.length);
-    const setMapRight = () => setMap(map => (map + 1) % mapList.length);    
+    const setMapLeft = () => {
+        if (roomInfo.host !== userInfo.username) return;
+        setMap(map => (map - 1) % mapList.length);
+        socket.emit("host-changed-map", roomInfo, "left");
+    }
+    const setMapRight = () => {
+        if (roomInfo.host !== userInfo.username) return;
+        setMap(map => (map + 1) % mapList.length);
+        socket.emit("host-changed-map", roomInfo, "right");
+    }
 
     const setStartGameHandler = async () => {
         if (roomInfo.host !== userInfo.username || roomInfo.playerList.length <= 1) return;
@@ -123,17 +156,33 @@ export default function GameRoom(props){
 
         socket.on('approve-return-lobby', () => {
             setStartGame(false);
-            setCloseChat(false);
-            
+            setCloseChat(false);            
         })
 
-        return () => playerLeavesRoomListener();
+
+        socket.on('announce-map-changes', (roomInfo, direction) => {
+            if (direction === 'left'){
+                setMap(map => (map - 1) % mapList.length);                
+            } else if (direction === 'right'){
+                setMap(map => (map + 1) % mapList.length);                 
+            }
+        });
+
+        return () => {
+            playerLeavesRoomListener(); 
+            socket.off('announce-map-changes');
+        }
     },[]);
 
     return <div id="game-room">
         {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} map={map} mapList={mapList} setMapLeft={setMapLeft} setMapRight={setMapRight}/> : null}
         {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
-        {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} returnToRoomLobbyHandler={returnToRoomLobbyHandler}/> : null}
+        {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} 
+                           returnToRoomLobbyHandler={returnToRoomLobbyHandler}
+                           skillSet={skillSet}
+                           setSkillSet={setSkillSet}
+                           skills={skills}
+                           /> : null}
         {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}
     </div>
 }
