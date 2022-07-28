@@ -30,6 +30,7 @@ export default function GameCanvas(props){
         if (props.isDead) return;
         const targetX = e.clientX - canvasPositionX;
         const targetY = e.clientY - canvasPositionY;
+
         const posX = props.positionX;
         const posY = props.positionY; 
 
@@ -55,8 +56,8 @@ export default function GameCanvas(props){
     useEffect(()=>{
 
 
-        setCanvasPositionX(mapCanvasRef.current.offsetLeft);
-        setCanvasPositionY(mapCanvasRef.current.offsetTop);
+        setCanvasPositionX(mapCanvasRef.current.getBoundingClientRect().x);
+        setCanvasPositionY(mapCanvasRef.current.getBoundingClientRect().y);
 
         const animate = () => {
             if(endAnimation) return;
@@ -144,7 +145,7 @@ export default function GameCanvas(props){
             
             const {posX, posY} = position;
             const {targetX, targetY} = target;
-
+            console.log(targetX, targetY, 'mhmhmhm');
             const angle = Math.atan2(
                 targetY - posY,
                 targetX - posX
@@ -213,22 +214,22 @@ export default function GameCanvas(props){
     
 
         socket.on('launch-skill-0', (shooterObject, ID, target)=> {
+            props.setActiveSkillToEmpty();            
             const animationDuration = 30; //fps
-            console.log('launched');
             const renderSkill = () => {
                 if (props.isDead) return;
                 const skillDelay = setTimeout(() => {
                     const {targetX, targetY} = target;                    
-                    console.log('CASTSTTTSTSTST');
-                    const offsetX = Math.floor(targetX/2) - Math.floor(props.skills[ID].radius/2); 
-                    const offsetY = Math.floor(targetY/2) - Math.floor(props.skills[ID].radius/2);
-                    
+                    const offsetX = Math.floor(targetX/2 - props.skills[ID].radius/2); 
+                    const offsetY = Math.floor(targetY/2 - props.skills[ID].radius/2);
+                    console.log('ehehe', props.skills[ID].radius);
                     const impactArea = [];
                     for (let h = offsetX; h < offsetX + props.skills[ID].radius; h++){
                         for (let v = offsetY; v < offsetY + props.skills[ID].radius; v++){
                             impactArea.push([h,v]);
                         }
                     }             
+
                     
                     // check if anyone hit
                     
@@ -239,7 +240,6 @@ export default function GameCanvas(props){
                         animationCounter++;
                         if (animationCounter >= animationDuration) {
                             window.cancelAnimationFrame(nukeAnimate);
-                            props.setActiveSkillToEmpty();
                             return;
                         }
                         window.requestAnimationFrame(nukeAnimate);
