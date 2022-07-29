@@ -7,7 +7,8 @@ import "../index.css";
 import GameDeathOverlay from "../subcomponents/GameDeathOverlay";
 
 import Map from "../assets/game/map.png";
-import Player from "../assets/game/segi8.jpg";
+import Player from "../assets/game/player.png";
+import Enemy from "../assets/game/enemy.png";
 
 
 export default function GameCanvas(props){
@@ -148,10 +149,11 @@ export default function GameCanvas(props){
 
         const mapImage = new Image();
         const playerImage = new Image();        
-
+        const enemyImage = new Image();
 
         mapImage.src = mapsList[props.mapNumber];
         playerImage.src = Player; 
+        enemyImage.src = Enemy;
         
 
         socket.on('create-projectile', (target, position, shooter, boundlessBullet) => {
@@ -168,7 +170,13 @@ export default function GameCanvas(props){
             map.fillStyle = 'orange'; 
 
             const bulletAnimate = (startX, startY,velocityX, velocityY, shooter, damage) => {
-                map.fillRect(startX-3, startY-3, 6, 6);
+                // map.fillRect(startX-3, startY-3, 6, 6);
+                // map.arc(startX-3, startY-3, 6, Math.PI * 2);
+
+                map.beginPath();
+                map.arc(startX-3, startY-3, 4, 0,Math.PI * 2);                
+                map.fill();
+
                 try{ 
                     const bulletPosition = [Math.floor(startX/2), Math.floor(startY/2)]
 
@@ -350,7 +358,7 @@ export default function GameCanvas(props){
                 map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){
                     if (player.username === props.userInfo.username) continue;  
-                    map.drawImage(playerImage, player.positionX-6, player.positionY-6, 12, 12);
+                    map.drawImage(enemyImage, player.positionX-6, player.positionY-6, 12, 12);
                     // map.drawImage(playerImage, -6, -6, 12, 12);                      
                     // map.fillStyle = 'orange';
                     // map.fillRect(0,0,8,8);                       
