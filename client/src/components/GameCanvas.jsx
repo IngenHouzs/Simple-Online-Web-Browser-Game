@@ -24,18 +24,22 @@ export default function GameCanvas(props){
     const [canvasPositionX, setCanvasPositionX] = useState(0);
     const [canvasPositionY, setCanvasPositionY] = useState(0);
 
+    const [countBoundlessBullet, setCountBoundlessBullet] = useState(0);
+
 
 
     const shootHandler = (e) => {
         if (props.isDead) return;
+
         const targetX = e.clientX - canvasPositionX;
         const targetY = e.clientY - canvasPositionY;
 
         const posX = props.positionX;
-        const posY = props.positionY; 
+        const posY = props.positionY;
+        
+        console.log(canvasPositionX, canvasPositionY, "|||", mapCanvasRef.current.getBoundingClientRect().x, mapCanvasRef.current.getBoundingClientRect().y);
 
         // disini tentuin skillnya 
-        console.log('as', props.activeSkill);
         if (props.activeSkill !== null){
 
             // meteor
@@ -44,23 +48,33 @@ export default function GameCanvas(props){
             } 
             // boundless bullet
             else if (props.activeSkill === 1){
-                // socket.emit('skill-2', props.userInfo, 1);
+
+                if (countBoundlessBullet < props.skills[1].count) {
+                    setCountBoundlessBullet(countBoundlessBullet => countBoundlessBullet + 1);
+                    socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo, true);                     
+                } else {                
+                    props.setActiveSkillToEmpty();
+                    setCountBoundlessBullet(0);
+                    socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo, false);                        
+                }
             }
             return;
         }
 
-        socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo);
+        socket.emit('player-shoot', {targetX, targetY}, {posX, posY}, props.userInfo.username, props.roomInfo, false);
     }
 
 
     useEffect(()=>{
 
 
-        setCanvasPositionX(mapCanvasRef.current.getBoundingClientRect().x);
-        setCanvasPositionY(mapCanvasRef.current.getBoundingClientRect().y);
+        setCanvasPositionX(Math.floor(mapCanvasRef.current.getBoundingClientRect().x));
+        setCanvasPositionY(Math.floor(mapCanvasRef.current.getBoundingClientRect().y));
 
         const animate = () => {
-            if(endAnimation) return;
+            if(endAnimation) return; 
+            setCanvasPositionX(Math.floor(mapCanvasRef.current.getBoundingClientRect().x));
+            setCanvasPositionY(Math.floor(mapCanvasRef.current.getBoundingClientRect().y));            
             socket.emit('live-server', props.roomInfo, null);
             window.requestAnimationFrame(animate);
         }
@@ -140,12 +154,12 @@ export default function GameCanvas(props){
         playerImage.src = Player; 
         
 
-        socket.on('create-projectile', (target, position, shooter) => {
+        socket.on('create-projectile', (target, position, shooter, boundlessBullet) => {
 
             
             const {posX, posY} = position;
             const {targetX, targetY} = target;
-            console.log(targetX, targetY, 'mhmhmhm');
+
             const angle = Math.atan2(
                 targetY - posY,
                 targetX - posX
@@ -177,10 +191,10 @@ export default function GameCanvas(props){
                     } 
 
 
-                    if (props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w' ||
+                    if ((props.boundaryGrid[Math.floor(startX/2)][Math.floor(startY/2)] === 'w' ||
                         bulletPosition[0] < 0 || bulletPosition[1] < 0 ||
                         bulletPosition[0] > 1182 || bulletPosition[1] > 682
-                    ) {
+                    ) && !boundlessBullet) {
                         window.cancelAnimationFrame(bulletAnimate);
                         return;
                     }
@@ -222,21 +236,55 @@ export default function GameCanvas(props){
                     const {targetX, targetY} = target;                    
                     const offsetX = Math.floor(targetX/2 - props.skills[ID].radius/2); 
                     const offsetY = Math.floor(targetY/2 - props.skills[ID].radius/2);
-                    console.log('ehehe', props.skills[ID].radius);
+              
                     const impactArea = [];
                     for (let h = offsetX; h < offsetX + props.skills[ID].radius; h++){
                         for (let v = offsetY; v < offsetY + props.skills[ID].radius; v++){
-                            impactArea.push([h,v]);
+                            impactArea.push([h,v]);     
                         }
-                    }             
+                    }  
+                    
 
+                    const PlayerOffsetX = Math.floor(props.positionX/2) - 3; 
+                    const PlayerOffsetY = Math.floor(props.positionY/2) - 3;
+                    
+                    const playerBodyArea = [];
+                    for (let h = PlayerOffsetX; h < PlayerOffsetX + 6; h++){
+                        for (let v = PlayerOffsetY; v < PlayerOffsetY + 6; v++){
+                            playerBodyArea.push([h,v]);
+                        }
+                    } 
+
+                    console.log(playerBodyArea, '2wlw');
+                    console.log(impactArea, 'wejeje');
+
+                    // const playerInImpactArea = playerBodyArea.filter((coordinate, idx) => coordinate[0] === impactArea[idx][0] && coordinate[1] === impactArea[idx][1]);                          
+                    let playerIsHit = false;
+                    for (let impact of impactArea){
+                        for (let self of playerBodyArea){
+                            if (self[0] === impact[0] && self[1] === impact[1]){
+                                playerIsHit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // const playerIsHit = impactArea.find((position) => position[0] == Math.floor(props.positionX/2) && position[1] == Math.floor(props.positionY/2)); 
+
+                    if (playerIsHit && shooterObject.username !== props.userInfo.username){
+                        console.log('hit');
+                        socket.emit('bullet-hit', props.roomInfo, shooterObject.username, props.userInfo, props.skills[ID].damage);
+                    }                    
                     
                     // check if anyone hit
                     
                     map.fillStyle = 'red';
                     let animationCounter = 0
                     const nukeAnimate = () => {
-                        map.fillRect(offsetX, offsetY, props.skills[ID].radius, props.skills[ID].radius);
+                        // for (let i of impactArea){
+                        //     map.fillRect(i[0] * 2, i[1]*2, 2, 2 );
+                        // }
+                        map.fillRect(impactArea[0][0] * 2, impactArea[0][1] * 2, props.skills[ID].radius * 2, props.skills[ID].radius * 2);
                         animationCounter++;
                         if (animationCounter >= animationDuration) {
                             window.cancelAnimationFrame(nukeAnimate);

@@ -1354,7 +1354,7 @@ label.submenu-form-label, .horizontal-create-room-description{
 
 #player-utilities{
   display:flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   margin-left:1rem;
   gap:1rem;
 }

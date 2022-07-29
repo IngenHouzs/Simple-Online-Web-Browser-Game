@@ -71,8 +71,8 @@ io.on('connection', socket => {
     });
 
 
-    socket.on('player-shoot', (target, position, shooter, room) => {
-        io.to(room.roomName).emit('create-projectile',target, position, shooter);
+    socket.on('player-shoot', (target, position, shooter, room, boundlessBullet) => {
+        io.to(room.roomName).emit('create-projectile',target, position, shooter, boundlessBullet);
     });
 
     socket.on('host-changed-map', (roomInfo, direction) => {

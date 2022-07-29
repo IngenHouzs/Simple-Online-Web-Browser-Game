@@ -37,10 +37,11 @@ export default function GameRoom(props){
                 id : 0, 
                 name : "Meteor", 
                 manaUsage : 80,
-                radius : 8,
+                radius : 16,
                 count : 1,
                 logo : Meteor,
-                delay : 2000
+                delay : 2000, 
+                damage : 20
             }, 
             {
                 id : 1,
@@ -50,6 +51,7 @@ export default function GameRoom(props){
                 count : 5, 
                 logo : BoundlessBullet,
                 delay : 0,
+                damage : 10
             }
         ]
     );
