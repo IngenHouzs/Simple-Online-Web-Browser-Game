@@ -194,6 +194,7 @@ export default function GameCanvas(props){
 
                     if (playerIsHit && shooter !== props.userInfo.username){
                         socket.emit('bullet-hit', props.roomInfo, shooter, props.userInfo, props.damage);
+                        props.decreaseHealth(props.damage);                        
                         window.cancelAnimationFrame(bulletAnimate);
                         return;                        
                     } 
@@ -282,6 +283,7 @@ export default function GameCanvas(props){
                     if (playerIsHit && shooterObject.username !== props.userInfo.username){
                         console.log('hit');
                         socket.emit('bullet-hit', props.roomInfo, shooterObject.username, props.userInfo, props.skills[ID].damage);
+                        props.decreaseHealth(props.skills[ID].damage);
                     }                    
                     
                     // check if anyone hit
@@ -334,7 +336,6 @@ export default function GameCanvas(props){
         try{ 
             socket.on('update-player-stats', (data, victimData, shooter, lastHit, damage) => {
                 if (props.userInfo.username === shooter){  
-
                     if (lastHit) props.totalPointHandler(30);
                     else props.totalPointHandler(Math.floor(damage/2));
                     return;

@@ -54,7 +54,7 @@ io.on('connection', socket => {
             }
             onlineUsers.push({user, id});
             io.emit('update-online-users', onlineUsers);
-        } catch (err){console.log("connected : error occured")}
+        } catch (err){}
     });     
 
     socket.on('announce-new-room', async () => {
@@ -67,7 +67,6 @@ io.on('connection', socket => {
 
     socket.on('user-send-message-to-room', (message, room, sender) => {
         socket.to(room).emit('receive-room-message', message, sender);
-        console.log(sender, message);
     });
 
 
@@ -118,7 +117,7 @@ io.on('connection', socket => {
             const usersRoom = await findDatabaseName.collection(roomCollection).find({
                 roomName : roomInfo.roomName
             }).toArray();
-            console.log(usersRoom);
+
     
             io.to(roomInfo.roomName).emit('transfer-game-player-stats', usersRoom[0]);
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
@@ -208,8 +207,13 @@ io.on('connection', socket => {
                              }
                             }
                         );
+                        const playerList = await findDatabaseName.collection(roomCollection).find({
+                            roomName : room.roomName
+                        }).toArray();
+                        const newPlayers = playerList[0].gameData;   
                         io.to(room.roomName).emit('update-player-stats', newData);                        
-                    }
+                        io.to(room.roomName).emit('update-player-list', newPlayers);
+                    } 
                     
                     // const findDeathPlayer = await findDatabaseName.collection(roomCollection).
 
@@ -228,11 +232,12 @@ io.on('connection', socket => {
                     roomName : room.roomName
                 }).toArray();
                 const newGameData = newData[0].gameData;            
-
+                console.log(newGameData,' heyre');
                 io.to(room.roomName).emit('update-player-stats', newGameData, victimData, shooter, lastHit, damage);                      
+                io.to(room.roomName).emit('update-player-list', newGameData);
                 // io.to(room.roomName).emit('announce-player-bullet-hit', newGameData);
             }     
-        }catch(err){console.error(err, 'heheheheh')}
+        }catch(err){}
     });
 
     socket.on('request-profile-data', async userInfo => {
@@ -259,7 +264,7 @@ io.on('connection', socket => {
 
     socket.on('request-leaderboard-data', async () => {
         const getPlayers = await findDatabaseName.collection(collectionName).find().sort({point:-1}).toArray();
-        console.log('ejejejeje', getPlayers);
+
         io.emit('receive-leaderboard-data', getPlayers);
     });
 
@@ -273,7 +278,7 @@ io.on('connection', socket => {
                 }
             }
         )
-        console.log("mhmhmhmmh", user.username, value);
+
     });
 
     socket.on('live-server', async (room,bulletInfo) => {
@@ -287,10 +292,7 @@ io.on('connection', socket => {
                 // error klo gk lagi nembak
             } catch(err){}
 
-            // console.log(getUsers[0].gameData);
-            // console.log('------');
-            // console.log(getUsers[0].gameData[0], getUsers[0].gameData[1]);            
-            // console.log('------');            
+      
             io.to(room.roomName).emit('live-game-update', getUsers[0].gameData);
         }catch(err){};
     });
@@ -310,7 +312,7 @@ io.on('connection', socket => {
             const getRoom = await findDatabaseName.collection(roomCollection).find({
                 roomName : room.roomName
             }).toArray();
-            // getRoom.forEach((room) => console.log(JSON.stringify(room, null, 4)))
+
             
             io.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);                          
         } catch (err) {console.error(err, 'WKWKWK')}
@@ -363,7 +365,7 @@ io.on('connection', socket => {
     socket.on('disconnect', async () => {
         try{           
             const index = onlineUsers.findIndex((user) => user.id === socket.id);
-            // console.log(`User ${onlineUsers[index].user.username} logged out`);            
+           
             const databasePromise = database();
             const databaseInstance = await databasePromise;
             const findDatabaseName = await databaseInstance.db(databaseName);
@@ -471,7 +473,7 @@ io.on('connection', socket => {
                 
             onlineUsers.splice(index, 1);
             io.emit('update-online-users', onlineUsers);      
-        } catch(err){console.log(err)};
+        } catch(err){};
    
     });
 

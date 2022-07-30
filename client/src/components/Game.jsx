@@ -13,22 +13,17 @@ import '../index.css';
 function PlayerCard(properties){
 
 
-    const ref = useRef();
+    // const ref = useRef();
 
     useEffect(() => {
-        ref.current.style.setProperty('width', `${properties.health}%`, 'important');
+        // ref.current.style.setProperty('width', `${properties.health}%`, 'important');
     }, []);
 
     return <div className="ingame-player-card" style={{marginRight:'1rem !important'}}>
         <div className="profile-icon"></div>
         <div className='player-status'>
             <p>{properties.player.username}</p>
-            <section className="player-health">
-                <section className='health-bar' ref={ref} style={{
-                    width : `${properties.health}% !important`,
-                    height : '100%'                    
-                }}></section>
-            </section>
+            <progress className="player-health" value={properties.health} max={100}></progress>
         </div>
     </div>
 }
@@ -43,7 +38,7 @@ function SkillButton(properties){
 
 export default function Game(props){
 
-    const ref = useRef();    
+    // const ref = useRef();    
 
 
     const [playerIndex, setPlayerIndex] = useState(-1);
@@ -51,7 +46,7 @@ export default function Game(props){
     const [health, setHealth] = useState(100);
     const [positionX, setPositionX] = useState(0);
     const [positionY, setPositionY] = useState(0);
-    const [enemyList, setEnemyList] = useState(props.gameData);
+    const [enemyList, setEnemyList] = useState([]);
     const [rank, setRank] = useState(-1);
 
     const [isDead, setIsDead] = useState(false);
@@ -103,7 +98,12 @@ export default function Game(props){
         if (endGame) return;
         setTotalPoint(totalPoint => totalPoint + value);
     }
-    const rankHandler = (value) => setRank(value); 
+    const rankHandler = (value) => setRank(value);  
+
+    const decreaseHealth = (value) => {
+        setHealth(health => health - value);
+        console.log(health, value, 'neww');
+    }
 
     useEffect(() => { 
         // setPlayersStats(props.roomInfo.gameData);
@@ -111,7 +111,8 @@ export default function Game(props){
 
  
         
-    },[totalPoint])
+    },[totalPoint]) 
+
 
     useEffect(() => {   
         setTotalPoint(0);
@@ -140,8 +141,9 @@ export default function Game(props){
 
 
             try{
-                const gameData = data.gameData;
-                setEnemyList(gameData);
+                const gameData = data.gameData; 
+                const findPlayersExceptSelf = gameData.filter(player => player.username !== props.userInfo.username);
+                setEnemyList(findPlayersExceptSelf);
                 // console.log("ehehehheeh", enemyList[1]);
                 for (let player in gameData){
                     if (gameData[player].username === props.userInfo.username){
@@ -168,7 +170,7 @@ export default function Game(props){
             setIsDead(true);
         });
 
-        ref.current.style.setProperty('width', `100%`, 'important');
+        // ref.current.style.setProperty('width', `100%`, 'important');
 
         // socket.on('update-player-stats', (data) => {
         //     setPlayersStats(data);
@@ -198,8 +200,26 @@ export default function Game(props){
 
           });        
 
+        socket.on('update-player-list', newPlayersData => {
+            try{
+                console.log(newPlayersData, 'neeeeee');
+                const findPlayersExceptSelf = newPlayersData.filter((player) => player.username !== props.userInfo.username);
+                setEnemyList(findPlayersExceptSelf);
+            }catch(err){}
+        });
+
+
+        // socket.on('live-game-update', data => {
+        //     const playerListExceptSelf = data.filter(player => player.username !== props.userInfo.username);
+        //     setEnemyList();
+        // });
+
+
         return () => {
             socket.off('end-game');
+            socket.off('player-death');
+            socket.off('update-player-list');
+            // socket.off('live-game-update');
         }
                          
     }, []);
@@ -210,7 +230,6 @@ export default function Game(props){
                 setMana(100);
                 return;
             } 
-            console.log(mana, 'mymana');
             setMana(mana => mana + 10);
         }, 2000);
 
@@ -229,19 +248,14 @@ export default function Game(props){
 
         <div className="ingame-player-status-wrapper">
             <div className="not-self-player">
-                {/* { enemyList ? (enemyList.map((player) => <PlayerCard player={player} health={player.health} roomInfo={props.roomInfo}/>)) : null} */}
+                { enemyList ? (enemyList.map((player) => <PlayerCard player={player} health={player.health} roomInfo={props.roomInfo}/>)) : null}
             </div>
             <div className="self-player">  
                 <div className="ingame-player-card self-player-card" style={{flexDirection:'row-reverse', backgroundColor:'grey'}}>
                     <div className="profile-icon"></div>
                     <div className='player-status' style={{textAlign : 'right', justifyContent:'flex-end'}}>
                         <p style={{textAlign:'center'}}>{props.userInfo.username}</p>
-                        <section className="player-health" style={{flexDirection:'row-reverse', clipPath:'polygon(0 0, 75% 0, 100% 100%, 25% 100%)'}}>
-                            <section className='health-bar' ref={ref} style={{
-                                width : `${health}% !important`,
-                                height : '100%'
-                            }}></section>
-                        </section>
+                        <progress  className="player-health" value={health} max={100}></progress>
                     </div>
                 </div>                         
             </div>
@@ -277,7 +291,8 @@ export default function Game(props){
                         activeSkill={activeSkill}
                         skills={props.skills}
                         skillList={props.skillList}
-                        setActiveSkillToEmpty={setActiveSkillToEmpty}
+                        setActiveSkillToEmpty={setActiveSkillToEmpty} 
+                        decreaseHealth={decreaseHealth}
                         />
             <id id="player-utilities">
                 {props.skillSet.map((skillIndex) => <SkillButton skill={props.skills[skillIndex]} decrementMana={decrementMana} index={skillIndex}/>)} 
