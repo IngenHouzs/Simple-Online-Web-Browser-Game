@@ -1279,6 +1279,100 @@ label.submenu-form-label, .horizontal-create-room-description{
 #player-utilities{
   width:7%;
   height:100%;
+  position: relative;
+} 
+
+#mana-bar{
+  position: absolute;
+  transform: rotate(270deg);
+  width:5rem;
+  height:20px;
+  background-color: yellow;
+  margin:0 !important; 
+  top:2rem;
+  right:2rem;
+} 
+
+
+.page-1, .page-3{
+  display:flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+} 
+
+.page-3 h1{
+  font-size:1.5rem;
+  margin-left:2rem;
+}
+
+.page-3{
+  align-items: flex-start;
+}
+
+
+
+.page-2{
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.indicator-text{
+  position: absolute;
+  font-size:.7rem;
+}
+
+.page-2 img{
+  height:75%;
+  width:90%;
+}
+
+.control{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height:18rem; 
+  margin-top:14rem;
+  text-align: center;  
+}
+
+
+.control p{
+  text-align: center;
+  font-weight: bold;
+}
+
+.control span{
+  font-weight: 100;
+}
+
+.keyboard{
+  width:12rem;
+  height:12rem;
+}
+
+.mouse{
+  width:12rem;
+  height: 12rem;
+}
+
+.manual-control{
+  width:100%;
+  height:3rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap:10rem;
+}
+
+#player-utilities div{
+  display: flex;
+  flex-direction: column;
+  gap:1rem;
 }
 
 
@@ -1354,9 +1448,63 @@ label.submenu-form-label, .horizontal-create-room-description{
 
 #player-utilities{
   display:flex;
-  flex-direction: column;
-  margin-left:1rem;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  align-items: flex-start !important;
+  margin-left:.7rem;
   gap:1rem;
+}
+
+.mana-wrapper{
+  display: flex;
+  flex-direction: column;
+}
+
+.mana-wrapper h1{
+  font-size:1rem;
+}
+
+#manual{
+  background-color:#ededed;
+  height:30rem;
+  width:50rem;
+  z-index : 7;
+  position:absolute;
+  left:24%;
+  bottom:40%;
+
+}
+
+.manual-section{
+  width:90%;
+  height:100%;
+  margin:0 auto;
+} 
+
+.manual-carousel-slider{
+  position: absolute;
+  width:100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  top:42%;
+} 
+
+.manual-carousel-slider button{
+    height:3.5rem;
+    width:3.5rem;
+    background:none;
+    font-size: 3rem;
+    text-align: center;
+    vertical-align: middle;
+    background-color: none;
+    border:none;
+    border-radius: 50%;
+}
+
+.manual-carousel-slider button:hover{
+  background-color: grey;
+
 }
 
 .skill{
@@ -1370,6 +1518,54 @@ label.submenu-form-label, .horizontal-create-room-description{
   height:100%;
 }
 
+.skill-list{
+  height: 5rem;
+  width:100%;
+  display: grid;
+  grid-template-columns: repeat(5, 20%); 
+  margin:0 auto;
+  margin-top:3rem;
+}
+
+.skill-damage-info{
+  display: flex;
+  flex-direction: row;
+}
+
+.skill-damage-info *{
+  margin:0;
+}
+
+.skill-damage-info img{
+  height:1rem !important; 
+  width:1rem !important;
+}
+
+.skill-info{
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.skill-info img{
+  height:3rem;
+  width:3rem;
+}
+
+.page-3 button{
+  position:absolute;
+  bottom:10px;
+  left:39%;
+  margin: 0 auto;
+  width:10rem;
+  height:3rem;
+  background-color: green;
+  color:white;
+  border:none;
+  border-radius: 5px;
+  font-weight: bold;
+}
 
 
 @media screen and (max-width:1350px){

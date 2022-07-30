@@ -15,7 +15,7 @@ export default function GameRoomNav(props){
         <h1>{props.roomInfo.roomName}</h1>
         <div className="game-multielement-nav-div">
             <button onClick={props.setStartGameHandler}>Start Game</button>
-            <button>?</button>
+            <button onClick={props.setIsOpenManualHandler}>?</button>
         </div>
         <div className="game-multielement-nav-div">
             <img src={Friends} alt="#"/>

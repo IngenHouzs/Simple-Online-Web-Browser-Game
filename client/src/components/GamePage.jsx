@@ -8,7 +8,7 @@ export default function GamePage(props){
         width : (!props.startGame ? '70%' : '100%'),
         margin : (!props.startGame ? null : '0 auto') 
     }}>
-        {!props.startGame ? <GameRoomNav roomInfo={props.roomInfo} userInfo={props.userInfo} startGame={props.startGame} setStartGameHandler={props.setStartGameHandler}/> : null}
+        {!props.startGame ? <GameRoomNav roomInfo={props.roomInfo} userInfo={props.userInfo} startGame={props.startGame} setStartGameHandler={props.setStartGameHandler} setIsOpenManualHandler={props.setIsOpenManualHandler}/> : null}
         {!props.startGame ? <GameRoomBody roomInfo={props.roomInfo} userInfo={props.userInfo} startGame={props.startGame} setStartGameHandler={props.setStartGameHandler} map={props.map} mapList={props.mapList} setMapLeft={props.setMapLeft} setMapRight={props.setMapRight}/> : null}
     </div>
 }

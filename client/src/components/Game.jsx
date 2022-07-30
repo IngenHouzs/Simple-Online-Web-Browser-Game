@@ -293,7 +293,10 @@ export default function Game(props){
                         decreaseHealth={decreaseHealth}
                         />
             <id id="player-utilities">
-                {props.skillSet.map((skillIndex) => <SkillButton skill={props.skills[skillIndex]} decrementMana={decrementMana} index={skillIndex}/>)} 
+                <progress id="mana-bar" max={100} value={mana}></progress>
+                <div>
+                    {props.skillSet.map((skillIndex) => <SkillButton skill={props.skills[skillIndex]} decrementMana={decrementMana} index={skillIndex}/>)} 
+                </div>
             </id>
         </div>
 

@@ -7,6 +7,8 @@ import { webserver } from "../ServerConfig";
 import GameChat from "../components/GameChat";
 import GamePage from "../components/GamePage";
 import Game from "../components/Game";
+import Overlay from "../subcomponents/Overlay";
+import Manual from "../subcomponents/Manual";
 
 import KingdomCastle from "../assets/game/map.png";
 import Meteor from "../assets/game/meteor.png";
@@ -24,6 +26,7 @@ export default function GameRoom(props){
     const [userInfo, setUserInfo] = useState(UserInfo);
     const [startGame, setStartGame] = useState(false);
     const [closeChat, setCloseChat] = useState(false);  
+    const [isOpenManual, setIsOpenManual] = useState(false);
 
     const [gameData, setGameData] = useState(false);
 
@@ -92,6 +95,7 @@ export default function GameRoom(props){
 
     const setCloseChatHandler = () => setCloseChat(!closeChat);
     const setCloseChatToTrue = () => setCloseChat(true);
+    const setIsOpenManualHandler = () => setIsOpenManual(!isOpenManual);
 
     socket.on('update-player-room', (players, room) => {
         setRoomInfo(room);
@@ -176,8 +180,10 @@ export default function GameRoom(props){
         }
     },[]);
 
-    return <div id="game-room">
-        {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} map={map} mapList={mapList} setMapLeft={setMapLeft} setMapRight={setMapRight}/> : null}
+    return <div id="game-room"> 
+        {isOpenManual ? <Overlay/> : null} 
+        {isOpenManual ? <Manual skills={skills} setIsOpenManualHandler={setIsOpenManualHandler}/> : null}
+        {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} map={map} mapList={mapList} setMapLeft={setMapLeft} setMapRight={setMapRight} setIsOpenManualHandler={setIsOpenManualHandler}/> : null}
         {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
         {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} 
                            returnToRoomLobbyHandler={returnToRoomLobbyHandler}
