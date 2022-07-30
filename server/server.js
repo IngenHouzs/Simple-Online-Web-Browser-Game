@@ -221,7 +221,7 @@ io.on('connection', socket => {
                     io.to(room.roomName).emit('player-death', victimData, shooter, lastHit, damage, findDeathPlayer.length+1);
 
                     if (findDeathPlayer.length <= 1){
-                        io.to(room.roomName).emit('end-game', shooter); 
+                        io.to(room.roomName).emit('end-game', shooter, false); 
        
                     }
 
@@ -338,6 +338,9 @@ io.on('connection', socket => {
             try{
                 const {gameData} = getRoom[0];
                 const removeUser = gameData.filter((player) => player.username !== user.username);
+                if (removeUser.length <= 1){
+                    io.to(room.roomName).emit('end-game', removeUser[0].username, true);
+                }                
                 const updateGameData = await findDatabaseName.collection(roomCollection).updateOne(
                 {roomName : room.roomName},
                 {
@@ -350,7 +353,7 @@ io.on('connection', socket => {
                     roomName : room.roomName
                 }).toArray();
     
-               io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);        
+               io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);                     
             } catch(err) {console.error(err)}
      
            socket.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);            

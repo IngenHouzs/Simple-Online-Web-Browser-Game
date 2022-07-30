@@ -189,15 +189,13 @@ export default function Game(props){
         // });      
         const postPlayerPoint = (num) => socket.emit('accumulate-player-point', props.userInfo, num);        
         
-        socket.on('end-game', (shooter) => {
+        socket.on('end-game', (shooter, quit) => {
             setEndGame(true); 
-            console.log(pointRef.current, ' mgmgmg')
-            console.log(pointRef.current, 'neeew');
+            if (quit) setTotalPoint(totalPoint => totalPoint + 30);
             if (props.userInfo.username === shooter) postPlayerPoint(pointRef.current + 30); // 30 is for last survivor bonus
             else postPlayerPoint(pointRef.current);
 
-            
-
+    
           });        
 
         socket.on('update-player-list', newPlayersData => {
