@@ -59,6 +59,14 @@ function Page3(properties){
             <li>Last survivor earns extra 30 rank points.</li>            
         </ul>
         <div className="skill-list">
+            <div className="skill-info">
+                <img src={Bullet} alt="#"/>
+                <p>Regular Shot</p>
+                <div className="skill-damage-info">
+                    <img src={Sword} alt="#"/>
+                    <p>10</p>
+                </div>
+            </div>              
             {properties.skills.map(skill =>     
                 <div className="skill-info">
                     <img src={skill.logo} alt="#"/>

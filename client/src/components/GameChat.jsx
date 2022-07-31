@@ -1,5 +1,6 @@
 import React from "react";
-import { useState } from "react";
+import { useEffect } from "react";
+import { useState, useRef} from "react";
 import { socket } from "../ClientSocket";
 
 import "../index.css";
@@ -34,6 +35,8 @@ function ChatBox(properties){
 
 export default function GameChat(props){
 
+    const chatRef = useRef();
+
     const [messageList, setMessageList] = useState([]);    
     const [message, setMessage] = useState('');
 
@@ -52,11 +55,21 @@ export default function GameChat(props){
         setMessage('');
     } 
 
+    // useEffect(()=>{
+    //     console.log('first-render', 'wkw', props.chatPosition);
+    // },[]);
 
-    return <div className="game-chat" style={{
+    // useEffect(()=>{
+    //     chatRef.current.style.zIndex = props.chatPosition;
+    //     console.log('ccpee', props.chatPosition);
+    // }, [props.chatPosition]);
+
+
+    return <div className="game-chat" ref={chatRef} style={{
         position : (props.inGame ? 'absolute' : 'relative'),
         right : (props.inGame && 0),
-        bottom : (props.inGame && "-15px")
+        bottom : (props.inGame && "-15px"),
+        zIndex : (props.chatPosition)
     }}>
         {!props.closeChat ? 
             <div className="game-chat-box">

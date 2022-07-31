@@ -865,6 +865,9 @@ label.submenu-form-label, .horizontal-create-room-description{
   justify-content: flex-start;
   padding-top: 2.5rem;
   align-items: center;  
+  z-index:1 !important;
+  position: absolute;
+  right:0;
 }
 
 #game-room-nav{
@@ -1250,6 +1253,7 @@ label.submenu-form-label, .horizontal-create-room-description{
   width:93%;
   background-color: white;
   position:relative;
+  z-index:7;
 }
 
 .game-end{

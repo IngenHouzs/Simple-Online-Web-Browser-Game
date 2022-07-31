@@ -27,6 +27,7 @@ export default function GameRoom(props){
     const [startGame, setStartGame] = useState(false);
     const [closeChat, setCloseChat] = useState(false);  
     const [isOpenManual, setIsOpenManual] = useState(false);
+    const [chatPosition, setChatPosition] = useState(0);
 
     const [gameData, setGameData] = useState(false);
 
@@ -82,7 +83,27 @@ export default function GameRoom(props){
         socket.emit('return-to-room-lobby', roomInfo);
     };
 
+    const setChatPositionHandler = () => {
+        if (chatPosition === 8){
+            setChatPosition(1);
+            document.getElementsByClassName('game-chat')[0].style.zIndex = 1;
+            document.getElementsByClassName('game-chat')[0].setAttribute('style', 'z-index:1 !important');
+            document.getElementsByClassName('game-chat')[0].setAttribute('position', 'absolute !important');            
 
+        } else {
+            setChatPosition(8);
+            document.getElementsByClassName('game-chat')[0].style.zIndex = 8;   
+            document.getElementsByClassName('game-chat')[0].setAttribute('style', 'z-index:8 !important');  
+            document.getElementsByClassName('game-chat')[0].setAttribute('position', 'absolute !important');                                     
+        };
+
+       
+    }
+
+
+    useEffect(()=>{
+        document.getElementsByClassName('game-chat')[0].style.zIndex = 0;    
+    },[]);
 
 
     // socket.on('transfer-game-player-stats', data => {
@@ -93,7 +114,10 @@ export default function GameRoom(props){
 
     const allClientStartGame = () => setStartGame(true);
 
-    const setCloseChatHandler = () => setCloseChat(!closeChat);
+    const setCloseChatHandler = () => {
+        setChatPositionHandler();
+        setCloseChat(!closeChat);
+    }
     const setCloseChatToTrue = () => setCloseChat(true);
     const setIsOpenManualHandler = () => setIsOpenManual(!isOpenManual);
 
@@ -184,12 +208,13 @@ export default function GameRoom(props){
         {isOpenManual ? <Overlay/> : null} 
         {isOpenManual ? <Manual skills={skills} setIsOpenManualHandler={setIsOpenManualHandler}/> : null}
         {!startGame ? <GamePage roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} map={map} mapList={mapList} setMapLeft={setMapLeft} setMapRight={setMapRight} setIsOpenManualHandler={setIsOpenManualHandler}/> : null}
-        {!startGame ? <GameChat inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
+        {!startGame ? <GameChat chatPosition={chatPosition} inGame={false} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/>: null}        
         {startGame ? <Game gameData={gameData} closeChat={closeChat} mapChoice={mapList[map]} mapNumber={map} setCloseChatHandler={setCloseChatHandler} setCloseChatToTrue={setCloseChatToTrue} roomInfo={roomInfo} userInfo={userInfo} 
                            returnToRoomLobbyHandler={returnToRoomLobbyHandler}
                            skillSet={skillSet}
                            setSkillSet={setSkillSet}
                            skills={skills}
+                           chatPosition={chatPosition}
                            /> : null}
         {startGame ? <GameChat inGame={true} roomInfo={roomInfo} userInfo={userInfo} startGame={startGame} setStartGameHandler={setStartGameHandler} closeChat={closeChat} setCloseChatHandler={setCloseChatHandler}/> : null}
     </div>
