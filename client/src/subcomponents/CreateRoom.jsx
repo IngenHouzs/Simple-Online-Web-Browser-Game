@@ -20,6 +20,7 @@ export default function CreateRoom(props){
     const [roomName, setRoomName] = useState('');
     const [roomPlayerCount, setRoomPlayerCount] = useState(1);
     const [roomPW, setRoomPW] = useState('');
+    const [duplicate, setDuplicate] = useState(false);
 
     const [isInvalidName, setIsInvalidName] = useState(false);
     const [isInvalidPlayerCount, setIsInvalidPlayerCount] = useState(false);
@@ -37,7 +38,13 @@ export default function CreateRoom(props){
     }
 
     const submitQuery = (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
+        const findDuplicate = props.rooms.find(room => room.roomName === roomName);
+        if (findDuplicate) {
+            setDuplicate(true);
+            return; 
+        } else setDuplicate(false);
+  
 
         if (roomName === '') setIsInvalidName(true);
         else setIsInvalidName(false);      
@@ -45,7 +52,7 @@ export default function CreateRoom(props){
         if (roomPlayerCount === 1) setIsInvalidPlayerCount(true);
         else setIsInvalidPlayerCount(false);
 
-        if (isInvalidName || isInvalidPlayerCount || roomName === '' || roomPlayerCount === 1) return;
+        if (roomName === '' || roomPlayerCount === 1) return;
         // successful
 
         const requestDetail = {
@@ -92,7 +99,7 @@ export default function CreateRoom(props){
         <h1 className="submenu-title">Create Room</h1>
         <form method='POST' onSubmit={null}>
             <input type="text" className="room-name-input" name="roomName"placeholder="Enter room name" value={roomName} onChange={roomNameHandler}></input>
-            <label className="error-message error-invalid-name">{isInvalidName ? "Invalid name format" : null}</label>
+            <label className="error-message error-invalid-name">{isInvalidName ? "Invalid name format" : duplicate ? "Room name is reserved" : null}</label>
             <div className="horizontal-create-room-description">
                 <img src={FriendsLogo} alt="#"/>
                 <label className="submenu-form-label">Max Player Count</label>

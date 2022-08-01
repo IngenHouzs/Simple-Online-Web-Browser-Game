@@ -136,11 +136,6 @@ io.on('connection', socket => {
         } catch(err){}
     });
 
-    // ingame socket connection {}
-
-
-
-
     socket.on('change-player-stats', async (user, room, data) => {
         try{
   

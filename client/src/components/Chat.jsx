@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import { useState } from "react";
 import {socketIOClient, socket, ENDPOINT} from "../ClientSocket";
 
@@ -47,7 +48,8 @@ export default function Chat(props){
         ]);
     });
 
-    const sendMessage = () => {
+    const sendMessage = (e) => {
+        e.preventDefault();
         if (message === '') return;
         socket.emit('user-send-message', message, props.userInfo.username);
         setMessageList(() => [...messageList, {
@@ -60,6 +62,8 @@ export default function Chat(props){
         setMessage(e.target.value);
     }
 
+
+
     return <div id="chat">
         <div className="chat-wrapper">
             <h1>Online User : {props.onlinePlayers}</h1>
@@ -68,8 +72,10 @@ export default function Chat(props){
             </div>
         </div>
         <div className="chat-input-wrapper">
-            <input type="text" placeholder="Type your message" name="message" value={message} onChange={messageHandler}></input>
-            <button onClick={sendMessage}>Send</button>
+            <form onSubmit={sendMessage}>            
+                <input type="text" placeholder="Type your message" name="message" value={message} onChange={messageHandler}></input>
+                <button>Send</button>                
+            </form>
         </div>
     </div>
 }
