@@ -31,7 +31,7 @@ function PlayerCard(properties){
 
 export default function GameRoomBody(props){
 
-    const [maps, setMaps] = useState([KingdomCastle]); // map image disini
+    const [maps, setMaps] = useState([KingdomCastle]); // map image list is here
 
     const renderMapImage = () => {
         return maps[props.map];

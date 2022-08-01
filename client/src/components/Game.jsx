@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRef } from "react";
 import { socket } from "../ClientSocket";
 
@@ -11,14 +11,6 @@ import '../index.css';
 
 
 function PlayerCard(properties){
-
-
-    // const ref = useRef();
-
-    useEffect(() => {
-        // ref.current.style.setProperty('width', `${properties.health}%`, 'important');
-    }, []);
-
     return <div className="ingame-player-card" style={{marginRight:'1rem !important'}}>
         <div className="profile-icon"></div>
         <div className='player-status'>
@@ -38,9 +30,6 @@ function SkillButton(properties){
 
 export default function Game(props){
 
-    // const ref = useRef();    
-
-
     const [playerIndex, setPlayerIndex] = useState(-1);
 
     const [health, setHealth] = useState(100);
@@ -55,8 +44,6 @@ export default function Game(props){
     const [endGame, setEndGame] = useState(false);  
 
     const [mana, setMana] = useState(0);    
-    
-    // const [playersStats, setPlayersStats] = useState(props.gameData);
 
     const [row, setRow] = useState(1180);
     const [column, setColumn] = useState(632); 
@@ -64,13 +51,12 @@ export default function Game(props){
     const [damage, setDamage] = useState(10);
 
 
-    const [activeSkill, setActiveSkill] = useState(null); // value nanti 0 or 1 (sesuai index skill di array USER)
+    const [activeSkill, setActiveSkill] = useState(null); 
 
     const pointRef = useRef(totalPoint);
 
     const decrementMana = (weight, id) => {
         if (mana < weight) return;
-        console.log("USED SKILL");
         setMana(mana => mana - weight); 
         if (mana < 0) setMana(0);
         setActiveSkill(id);
@@ -102,22 +88,15 @@ export default function Game(props){
 
     const decreaseHealth = (value) => {
         setHealth(health => health - value);
-        console.log(health, value, 'neww');
     }
 
     useEffect(() => { 
-        // setPlayersStats(props.roomInfo.gameData);
         pointRef.current = totalPoint;
-
- 
-        
     },[totalPoint]) 
 
 
     useEffect(() => {   
         setTotalPoint(0);
-        // setEnemyList(props.gameData);
-        console.log("WKKWKWKWKKWKWKKWKKWKWKWKKWKW");
         props.setCloseChatToTrue(); 
 
         try {
@@ -144,10 +123,9 @@ export default function Game(props){
                 const gameData = data.gameData; 
                 const findPlayersExceptSelf = gameData.filter(player => player.username !== props.userInfo.username);
                 setEnemyList(findPlayersExceptSelf);
-                // console.log("ehehehheeh", enemyList[1]);
+
                 for (let player in gameData){
                     if (gameData[player].username === props.userInfo.username){
-                        // setHealth(100);   
                         setPositionX(props.mapChoice.startingPosition[player][0]);
                         setPositionY(props.mapChoice.startingPosition[player][1]);
                         setPlayerIndex(player);
@@ -170,23 +148,7 @@ export default function Game(props){
             setIsDead(true);
         });
 
-        // ref.current.style.setProperty('width', `100%`, 'important');
 
-        // socket.on('update-player-stats', (data) => {
-        //     setPlayersStats(data);
-        //     setEnemyList(data);
-        //     console.log('data', data);
-        //     console.log(enemyList, 'huhuhu');
-        // });
-
-
-        // setInterval(() => console.log(enemyList,'----'), 3000);
-
-        // socket.on('update-player-stats', data => {
-
-        //     setEnemyListHandler(data.gameData);
-
-        // });      
         const postPlayerPoint = (num) => socket.emit('accumulate-player-point', props.userInfo, num);        
         
         socket.on('end-game', (shooter, quit) => {
@@ -200,24 +162,18 @@ export default function Game(props){
 
         socket.on('update-player-list', newPlayersData => {
             try{
-                console.log(newPlayersData, 'neeeeee');
                 const findPlayersExceptSelf = newPlayersData.filter((player) => player.username !== props.userInfo.username);
                 setEnemyList(findPlayersExceptSelf);
             }catch(err){}
         });
 
 
-        // socket.on('live-game-update', data => {
-        //     const playerListExceptSelf = data.filter(player => player.username !== props.userInfo.username);
-        //     setEnemyList();
-        // });
-
 
         return () => {
             socket.off('end-game');
             socket.off('player-death');
             socket.off('update-player-list');
-            // socket.off('live-game-update');
+
         }
                          
     }, []);

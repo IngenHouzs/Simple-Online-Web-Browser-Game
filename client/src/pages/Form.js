@@ -59,7 +59,7 @@ export default function Form(props){
             )
             .then(
                 async res => {
-                    if (res.status === 'success') {authUser = true;console.log(authUser)}
+                    if (res.status === 'success') {authUser = true}
                     if (props.type === 'Log In' && res.message === 'user is online!'){
                         setUserLoggedIn(true);
                     } else if (props.type === 'Log In' && res.status === 'fail'){
@@ -83,7 +83,7 @@ export default function Form(props){
                     return;
                 }
             )
-            .catch((err) => console.error(err));
+            .catch((err) => {});
     }
 
 

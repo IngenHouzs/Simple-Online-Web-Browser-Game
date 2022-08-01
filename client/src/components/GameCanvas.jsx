@@ -38,9 +38,6 @@ export default function GameCanvas(props){
         const posX = props.positionX;
         const posY = props.positionY;
         
-        console.log(canvasPositionX, canvasPositionY, "|||", mapCanvasRef.current.getBoundingClientRect().x, mapCanvasRef.current.getBoundingClientRect().y);
-
-        // disini tentuin skillnya 
         if (props.activeSkill !== null){
 
             // meteor
@@ -170,8 +167,6 @@ export default function GameCanvas(props){
             map.fillStyle = 'orange'; 
 
             const bulletAnimate = (startX, startY,velocityX, velocityY, shooter, damage) => {
-                // map.fillRect(startX-3, startY-3, 6, 6);
-                // map.arc(startX-3, startY-3, 6, Math.PI * 2);
 
                 map.beginPath();
                 map.arc(startX-3, startY-3, 4, 0,Math.PI * 2);                
@@ -222,17 +217,6 @@ export default function GameCanvas(props){
 
             bulletAnimate(startX, startY,velocityX, velocityY, shooter, props.damage);
 
-            // const bulletPeriod = setInterval(() => {
-            //     try{                     
-            //         if (start === targetX || props.boundaryGrid[start/2][(posY)/2] === 'w' ){
-            //             clearInterval(bulletPeriod);
-            //         }
-            //     } catch(err){}
-            //     // map.drawImage(mapImage, 0, 0);  //  
-                 
-            //     map.fillRect(start, posY, 6, 6);
-            //     start += 1;                
-            // },10); 
         });        
     
 
@@ -264,10 +248,9 @@ export default function GameCanvas(props){
                         }
                     } 
 
-                    console.log(playerBodyArea, '2wlw');
-                    console.log(impactArea, 'wejeje');
+    
 
-                    // const playerInImpactArea = playerBodyArea.filter((coordinate, idx) => coordinate[0] === impactArea[idx][0] && coordinate[1] === impactArea[idx][1]);                          
+                       
                     let playerIsHit = false;
                     for (let impact of impactArea){
                         for (let self of playerBodyArea){
@@ -278,22 +261,17 @@ export default function GameCanvas(props){
                         }
                     }
 
-                    // const playerIsHit = impactArea.find((position) => position[0] == Math.floor(props.positionX/2) && position[1] == Math.floor(props.positionY/2)); 
+
 
                     if (playerIsHit && shooterObject.username !== props.userInfo.username){
-                        console.log('hit');
                         socket.emit('bullet-hit', props.roomInfo, shooterObject.username, props.userInfo, props.skills[ID].damage);
                         props.decreaseHealth(props.skills[ID].damage);
                     }                    
-                    
-                    // check if anyone hit
+  
                     
                     map.fillStyle = 'red';
                     let animationCounter = 0
                     const nukeAnimate = () => {
-                        // for (let i of impactArea){
-                        //     map.fillRect(i[0] * 2, i[1]*2, 2, 2 );
-                        // }
                         map.fillRect(impactArea[0][0] * 2, impactArea[0][1] * 2, props.skills[ID].radius * 2, props.skills[ID].radius * 2);
                         animationCounter++;
                         if (animationCounter >= animationDuration) {
@@ -318,8 +296,7 @@ export default function GameCanvas(props){
         mapImage.onload = () => { 
             if (props.isDead) return;
             map.drawImage(mapImage, 0,0);               
-            map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);    
-            // map.drawImage(playerImage, -6, -6, 12, 12);                       
+            map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                        
         }
     
 
@@ -340,29 +317,15 @@ export default function GameCanvas(props){
                     else props.totalPointHandler(Math.floor(damage/2));
                     return;
                 }    
-                // props.setEnemyListHandler(data);
-                
-                // console.log("IINI GAME DATA", data);                
-                // console.log("beruba", props.enemyList);
+
                 
             });
             socket.on('live-game-update', (data) => {  
-                // props.setPlayersStatsHandler(data);
-                // const tempData = data;
-                // props.setEnemyListHandler(tempData);
-                // console.log(data[0].health, data[1].health);
-                // try{
-                // console.log(props.enemyList[0].health, props.enemyList[1].health, 'hehe')
-                // }catch(err){}
-                // console.log(data, 'hehehe');
-                map.drawImage(mapImage, 0, 0) //    
+                map.drawImage(mapImage, 0, 0) 
                 map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);                             
                 for (let player of data){
                     if (player.username === props.userInfo.username) continue;  
-                    map.drawImage(enemyImage, player.positionX-6, player.positionY-6, 12, 12);
-                    // map.drawImage(playerImage, -6, -6, 12, 12);                      
-                    // map.fillStyle = 'orange';
-                    // map.fillRect(0,0,8,8);                       
+                    map.drawImage(enemyImage, player.positionX-6, player.positionY-6, 12, 12);                  
                 }
             });                 
         } catch(err){}
@@ -370,8 +333,7 @@ export default function GameCanvas(props){
         if (!props.isDead){
             map.drawImage(mapImage, 0,0);           
             map.drawImage(playerImage, props.positionX-6, props.positionY-6, 12, 12);   
-        }
-        // map.drawImage(playerImage, -6, -6, 12, 12);              
+        }        
 
         return () =>  {
             window.removeEventListener('keypress', movementHandler);  

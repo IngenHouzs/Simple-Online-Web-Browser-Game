@@ -55,14 +55,6 @@ export default function GameChat(props){
         setMessage('');
     } 
 
-    // useEffect(()=>{
-    //     console.log('first-render', 'wkw', props.chatPosition);
-    // },[]);
-
-    // useEffect(()=>{
-    //     chatRef.current.style.zIndex = props.chatPosition;
-    //     console.log('ccpee', props.chatPosition);
-    // }, [props.chatPosition]);
 
 
     return <div className="game-chat" ref={chatRef} style={{

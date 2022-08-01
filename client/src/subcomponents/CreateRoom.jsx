@@ -75,7 +75,7 @@ export default function CreateRoom(props){
                 socket.emit('joined-room', props.userInfo, room);                
                 navigate(`/app/room?Id=${res.data.roomID}`,{state : {room, userInformation}});
             })
-            .catch((err) => console.error(err)); 
+            .catch((err) => {}); 
     }
 
 

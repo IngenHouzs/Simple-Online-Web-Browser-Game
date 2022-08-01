@@ -81,23 +81,7 @@ export default function Profile(props){
             <div className="friend-icon"></div>                        
             <h1>Friend List</h1>
         </button>   */}
-        <a className="log-out">LOG OUT</a> 
+        {/* <a className="log-out">LOG OUT</a>  */}
     </div>
 } 
 
-// bronze 3
-// bronze 2 
-// bronze 1
-// silver 3
-// silver 2 
-// silver 1
-// gold 3 
-// gold 2 
-// gold 1 
-// crystal 3 
-// crystal 2 
-// crystal 1 
-// platinum 3 
-// platinum 2 
-// platinum 1
-// conqueror 

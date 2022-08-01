@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {socket} from "../ClientSocket";
 import { webserver } from "../ServerConfig";
-// const bcrypt = require('bcrypt');
+
 
 import Padlock from "../assets/create-room/padlock.png"
 import "../index.css";
@@ -42,7 +42,7 @@ export default function RoomPassword(props){
                 } else setWrongPassword(true);
                           
             })
-            .catch(err => console.error(err));        
+            .catch(err => {});        
 
     }
 

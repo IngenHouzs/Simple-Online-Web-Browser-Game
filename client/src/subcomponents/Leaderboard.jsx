@@ -1,7 +1,4 @@
 import React from "react";
-import Overlay from "./Overlay";
-import {useState, useEffect} from "react";
-import { socket } from "../ClientSocket";
 
 import Bronze from "../assets/badge/bronze.png";
 import Silver from "../assets/badge/silver.png";

@@ -46,7 +46,6 @@ export default function Application(props){
     const addNewRoomToClient = (room) => setRooms(() => [...rooms, room]);
 
     socket.on('update-online-users', (onlineUsers) => {
-        console.log("User Online : ", onlineUsers.length);
         setOnlinePlayers(onlineUsers.length);
     });      
 
@@ -66,7 +65,7 @@ export default function Application(props){
             .then((res) => {
                 setRooms(res.data);
             })
-            .catch(err => console.error(err));
+            .catch(err => {});
     
         setRooms([]);    
 

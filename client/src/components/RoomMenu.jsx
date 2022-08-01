@@ -13,13 +13,11 @@ import { useEffect } from "react";
 function RoomButton(properties){
 
     const {search} = useLocation();
-    // const {roomName} = queryString.parse(search);
     const navigate = useNavigate();
     const userInformation = properties.userInfo;
       
 
     const joinRoom = async (room) => {
-        // socket.emit('announce-new-room');
         if (room.playerList.length >= room.maxPlayer || room.inGame){
             return;
         }
@@ -29,8 +27,6 @@ function RoomButton(properties){
             properties.updateTargetRoom(room);
             return;
         }
-
-        console.log('You joined room', room.roomName);
         
         const requestDetail = {
             mode : 'cors',
@@ -50,7 +46,7 @@ function RoomButton(properties){
                 socket.emit('announce-new-room');                
                 navigate(`/app/room?Id=${room.roomID}`, {state : {room, userInformation}});                
             })
-            .catch(err => console.error(err));
+            .catch(err => {});
 
     }    
 

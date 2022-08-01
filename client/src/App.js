@@ -15,8 +15,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(()=>{
-    socket.on('connection', data => console.log(data, "wkwkwk"));
-    // location.reload();
     setIsLoggedIn(false);
   });
 

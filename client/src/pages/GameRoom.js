@@ -96,8 +96,6 @@ export default function GameRoom(props){
             document.getElementsByClassName('game-chat')[0].setAttribute('style', 'z-index:8 !important');  
             document.getElementsByClassName('game-chat')[0].setAttribute('position', 'absolute !important');                                     
         };
-
-       
     }
 
 
@@ -106,11 +104,6 @@ export default function GameRoom(props){
     },[]);
 
 
-    // socket.on('transfer-game-player-stats', data => {
-    //     setGameData([...data.gameData]);
-    //     // console.log('gameRoom', data.gameData);
-    //     // console.log('ganedata', gameData);
-    // });    
 
     const allClientStartGame = () => setStartGame(true);
 
@@ -157,7 +150,6 @@ export default function GameRoom(props){
                 socket.emit('leaves-room', userInfo, roomInfo);
             })
             .catch((err) => {
-                console.error(err);
                 socket.emit('announce-new-room');                
             });
     }
@@ -174,15 +166,9 @@ export default function GameRoom(props){
         });
         socket.on('transfer-game-player-stats', (data) => {
             setGameData([...data.gameData]);  
-            
-            // console.log('bucks', data.gameData);
-            // console.log('gameRoom', data.gameData);
-            // console.log('ganedata', gameData);
         });
 
-        // socket.on('live-game-update', data => {
-        //     setGameData([...data]);
-        // })
+
 
         socket.on('approve-return-lobby', () => {
             setStartGame(false);

@@ -62,7 +62,7 @@ io.on('connection', socket => {
       
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
             io.emit('update-rooms-list-client', getUpdatedRooms);
-        }catch(err){console.error(err)}
+        }catch(err){}
     });
 
     socket.on('user-send-message-to-room', (message, room, sender) => {
@@ -122,7 +122,7 @@ io.on('connection', socket => {
             io.to(roomInfo.roomName).emit('transfer-game-player-stats', usersRoom[0]);
             const getUpdatedRooms = await findDatabaseName.collection(roomCollection).find().toArray();
             io.emit('update-rooms-list-client', getUpdatedRooms);
-        } catch (err) {console.error(err)}
+        } catch (err) {}
         io.to(roomInfo.roomName).emit('player-enter-game', callback);
     });
 
@@ -133,7 +133,7 @@ io.on('connection', socket => {
                 roomName : room.roomName
             }).toArray();
             io.to(room.roomName).emit('transfer-game-player-stats', findRoom[0]);
-        } catch(err){console.error(err)}
+        } catch(err){}
     });
 
     // ingame socket connection {}
@@ -162,7 +162,7 @@ io.on('connection', socket => {
                 }
             )
 
-        } catch (err){console.error(err)}
+        } catch (err){}
     });
 
     socket.on('request-map-data', async (room) => {
@@ -232,7 +232,6 @@ io.on('connection', socket => {
                     roomName : room.roomName
                 }).toArray();
                 const newGameData = newData[0].gameData;            
-                console.log(newGameData,' heyre');
                 io.to(room.roomName).emit('update-player-stats', newGameData, victimData, shooter, lastHit, damage);                      
                 io.to(room.roomName).emit('update-player-list', newGameData);
                 // io.to(room.roomName).emit('announce-player-bullet-hit', newGameData);
@@ -315,7 +314,7 @@ io.on('connection', socket => {
 
             
             io.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);                          
-        } catch (err) {console.error(err, 'WKWKWK')}
+        } catch (err) {}
     });
 
 
@@ -354,12 +353,12 @@ io.on('connection', socket => {
                 }).toArray();
     
                io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);                     
-            } catch(err) {console.error(err)}
+            } catch(err) {}
      
            socket.to(room.roomName).emit('update-player-room', getRoom[0].playerList, getRoom[0]);            
             
             
-        } catch (err) {console.error(err)}
+        } catch (err) {}
     });
 
     
@@ -462,7 +461,7 @@ io.on('connection', socket => {
                                 }).toArray();
                     
                                io.to(room.roomName).emit('transfer-game-player-stats', updatedRooms[0]);  
-                            }catch(err) {console.error(err)}                             
+                            }catch(err) {}                             
 
                            socket.to(room.roomName).emit('update-player-room', room.playerList, room);
                            break;
@@ -471,7 +470,7 @@ io.on('connection', socket => {
                     io.emit('update-rooms-list-client', newRoomList);
                 }                
 
-            } catch (err) {console.error(err)}
+            } catch (err) {}
 
                 
             onlineUsers.splice(index, 1);
