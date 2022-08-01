@@ -98,7 +98,7 @@ export default function CreateRoom(props){
     return <div className="submenu create-room-card" onSubmit={submitQuery}>
         <h1 className="submenu-title">Create Room</h1>
         <form method='POST' onSubmit={null}>
-            <input type="text" className="room-name-input" name="roomName"placeholder="Enter room name" value={roomName} onChange={roomNameHandler}></input>
+            <input type="text" className="room-name-input" name="roomName" placeholder="Enter room name" value={roomName} onChange={roomNameHandler}></input>
             <label className="error-message error-invalid-name">{isInvalidName ? "Invalid name format" : duplicate ? "Room name is reserved" : null}</label>
             <div className="horizontal-create-room-description">
                 <img src={FriendsLogo} alt="#"/>
