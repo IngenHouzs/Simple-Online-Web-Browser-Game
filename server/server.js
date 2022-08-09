@@ -11,7 +11,7 @@ const loginAPI = require('./routes/login');
 const signupAPI = require('./routes/signup');
 const onlineUsers = require('./onlineUser');
 const {Server} = require('socket.io');
-const { on } = require('events');
+
 
 
 const app = express();
@@ -32,6 +32,7 @@ const databaseInit = async () => {
     databasePromise = database();
     databaseInstance = await databasePromise;
     findDatabaseName = await databaseInstance.db(databaseName);
+        
 }
 
 databaseInit();
@@ -54,6 +55,7 @@ io.on('connection', socket => {
             }
             onlineUsers.push({user, id});
             io.emit('update-online-users', onlineUsers);
+
         } catch (err){}
     });     
 
